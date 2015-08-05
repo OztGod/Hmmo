@@ -14,6 +14,7 @@ public class SocketScript : MonoBehaviour
     string IdInput = "";
     string PswInput = "";
     bool IsLoginSuccess = false;
+    string debugMsg = "";
 
     void Awake()
     {
@@ -37,6 +38,17 @@ public class SocketScript : MonoBehaviour
         SocketResponse();
     }
 
+    [Merona.Client.PacketId(1)]
+    [StructLayout(LayoutKind.Sequential, Pack=1)]
+    class TestPacket : Merona.Client.Packet
+    {
+
+        public int a;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst=8)]
+        public byte[] data;
+    }
+
     void OnGUI()
     {
 
@@ -49,18 +61,6 @@ public class SocketScript : MonoBehaviour
                 //try to connect
                 Debug.Log("Attempting to connect..");
                 TcpSession.setupSocket();
-            }
-
-            float buttonWidth = 200;
-            float buttonHeight = 50;
-            float buttonX = Screen.width / 2;
-            float buttonY = Screen.height / 2 - buttonHeight / 2;
-
-            if (GUI.Button(new Rect(buttonX, buttonY, buttonWidth, buttonHeight), "GameStart"))
-            {
-                GameObject manager = GameObject.Find("SceneManager");
-                SceneManagerScript script = manager.GetComponent(typeof(SceneManagerScript)) as SceneManagerScript;
-                script.SceneChange();
             }
             return;
         }
@@ -77,28 +77,14 @@ public class SocketScript : MonoBehaviour
                     Login(IdInput, PswInput);
                 }
             }
-            else
-            {
-                float width = 300.0f;
-                float height = 50.0f;
-                float x = Screen.width / 2 - width / 2;
-                float y = Screen.height / 2 - height /2;
 
-                Rect rect = new Rect(x, y, width, height);
-                GUI.Box(rect, "LOGIN SUCCESS!!");
+            float width = 300.0f;
+            float height = 50.0f;
+            float x = Screen.width - width;
+            float y = Screen.height - height;
 
-                float buttonWidth = 200;
-                float buttonHeight = 50;
-                float buttonX = Screen.width / 2;
-                float buttonY = Screen.height / 2 - buttonHeight/2;
-                
-                if(GUI.Button(new Rect(buttonX, buttonY, buttonWidth, buttonHeight), "GameStart"))
-                {
-                    GameObject manager = GameObject.Find("SceneManager");
-                    SceneManagerScript script = manager.GetComponent(typeof(SceneManagerScript)) as SceneManagerScript;
-                    script.SceneChange();
-                }
-            }
+            Rect rect = new Rect(x, y, width, height);
+            GUI.Box(rect, debugMsg);
         }
     }
 
@@ -108,7 +94,7 @@ public class SocketScript : MonoBehaviour
         if (false == TcpSession.readSocket())
             return;
 
-        Debug.Log("Get Data..");
+        debugMsg = "Get Data..";
         while (true)
         {
             int packetSize = Marshal.SizeOf(typeof(Packets.Header));
@@ -117,7 +103,7 @@ public class SocketScript : MonoBehaviour
                 break;
             }
 
-            Debug.Log("Packet Making...");
+            debugMsg = "Packet Making...";
             byte[] headerBuffer = new byte[packetSize];
             RecvBuffer.Peek(headerBuffer, packetSize);
             Packets.Header header = new Packets.Header();
@@ -143,7 +129,37 @@ public class SocketScript : MonoBehaviour
         byte[] data = Packets.ByteSerializer<Packets.LoginRequest>.GetBytes(packet);
         TcpSession.writeSocket(data);
 
-        Debug.Log("Attempting to login..");
+        debugMsg = "Attempting to login..";
+    }
+    
+    void RequestRandomHero()
+    {
+        Packets.RandomHeroRequest packet = new Packets.RandomHeroRequest();
+        packet.type = (byte)Packets.Type.RANDOM_HERO_REQUEST;
+        byte[] data = Packets.ByteSerializer<Packets.RandomHeroRequest>.GetBytes(packet);
+        TcpSession.writeSocket(data);
+
+        debugMsg = "Request Random Hero...";
+    }
+
+    public void AllocHeros( MapIndex[] allocIndexes )
+    {
+        Packets.AllocHero packet = new Packets.AllocHero();
+        packet.allocNum = (sbyte)allocIndexes.Length;
+        packet.type = (byte)Packets.Type.ALLOC_HERO;
+        packet.x = new sbyte[4];
+        packet.y = new sbyte[4];
+
+        for(int i= 0 ; i < allocIndexes.Length ; ++i)
+        {
+            packet.x[i] = (sbyte)(allocIndexes[i].x);
+            packet.y[i] = (sbyte)(allocIndexes[i].y);
+        }
+
+        byte[] data = Packets.ByteSerializer<Packets.AllocHero>.GetBytes(packet);
+        TcpSession.writeSocket(data);
+
+        debugMsg = "Alloc Hero...";
     }
 
     void OnLoginResponse(Packets.LoginResult result)
@@ -152,13 +168,36 @@ public class SocketScript : MonoBehaviour
         {
             case Packets.LoginResult.SUCCESS:
                 IsLoginSuccess = true;
-                Debug.Log("Login Complete!...");
+                debugMsg = "Login Complete!...";
                 break;
             case Packets.LoginResult.FAILED:
                 TcpSession.closeSocket();
-                Debug.Log("Login Failed!...");
+                debugMsg = "Login Failed!...";
                 break;
         }
+    }
+
+    void OnMatchStart(Packets.MatchStart result)
+    {
+        RequestRandomHero();
+    }
+
+    void OnGameData(Packets.GameData result)
+    {
+
+    }
+
+    void OnRandomHeroResponse(byte[] heros)
+    {
+        int[] classArray = new int[heros.Length];
+        for (int i = 0; i < heros.Length; ++i)
+        {
+            classArray[i] = (int)heros[i];
+        }
+
+        GameObject map = GameObject.FindGameObjectWithTag("Map");
+        map.GetComponent<MapScript>().GetRandomCharacters(classArray);
+        debugMsg = "Character Setting...";
     }
 
     bool PacketHandler(Packets.Type type)
@@ -169,9 +208,11 @@ public class SocketScript : MonoBehaviour
                 {
                     int packetSize = Marshal.SizeOf(typeof(Packets.LoginResponse));
                     if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
                         return false;
+                    }
 
-                    Debug.Log("Processing Login...");
+                    debugMsg = "Processing Login...";
                     Packets.LoginResponse packet = new Packets.LoginResponse();                    
                     byte[] buffer = new byte[packetSize];
                     RecvBuffer.Read(ref buffer, packetSize);
@@ -181,6 +222,61 @@ public class SocketScript : MonoBehaviour
                     OnLoginResponse(result);
                 }
                 break;
+
+            case Packets.Type.RANDOM_HERO_RESPONSE:
+                {
+                    int packetSize = Marshal.SizeOf(typeof(Packets.RandomHeroResponse));
+                    if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
+                        return false;
+                    }
+
+                    debugMsg = "Random Hero Response...";
+                    Packets.RandomHeroResponse packet = new Packets.RandomHeroResponse();
+                    packet.heroClass = new byte[4];
+                    byte[] buffer = new byte[packetSize];
+                    RecvBuffer.Read(ref buffer, packetSize);
+                    packet = Packets.ByteSerializer<Packets.RandomHeroResponse>.Deserialize(buffer);
+                    OnRandomHeroResponse(packet.heroClass);
+                }
+                break;
+
+            case Packets.Type.MATCH_START:
+                {
+                    int packetSize = Marshal.SizeOf(typeof(Packets.MatchStart));
+                    if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
+                        return false;
+                    }
+
+                    debugMsg = "Match Start...";
+                    Packets.MatchStart packet = new Packets.MatchStart();
+                    byte[] buffer = new byte[packetSize];
+                    RecvBuffer.Read(ref buffer, packetSize);
+
+                    Packets.ByteSerializer<Packets.MatchStart>.ByteToObj(ref packet, buffer);
+                    OnMatchStart(packet);
+                }
+                break;
+
+            case Packets.Type.GAME_DATA:
+                {
+                    int packetSize = Marshal.SizeOf(typeof(Packets.GameData));
+                    if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
+                        return false;
+                    }
+
+                    debugMsg = "GameData...";
+                    Packets.GameData packet = new Packets.GameData();
+                    byte[] buffer = new byte[packetSize];
+                    RecvBuffer.Read(ref buffer, packetSize);
+
+                    Packets.ByteSerializer<Packets.GameData>.ByteToObj(ref packet, buffer);
+                    OnGameData(packet);
+                }
+                break;
+
             default:
                 break;
         }
@@ -190,14 +286,37 @@ public class SocketScript : MonoBehaviour
 
 }
 
+public class MapIndex
+{
+    private int maxX = 3;
+    private int maxY = 3;
+
+    public int x = 1;
+    public int y = 1;
+}
 
 namespace Packets
 {
+
+    public enum HeroClass
+    {
+        FIGHTER = 0,
+        MAGICIAN = 1,
+        ARCHER = 2,
+        THIEF = 3,
+        PRIEST = 4,
+        MONK = 5,
+    }
     public enum Type
     {
         LOGIN_REQUEST = 0,
         LOGIN_RESPONSE = 1,
-        TYPE_NUM = 2,
+        ALLOC_HERO = 2,
+        RANDOM_HERO_REQUEST = 3,
+        RANDOM_HERO_RESPONSE = 4,
+        MATCH_START = 5,
+        GAME_DATA = 6,
+        TYPE_NUM = 7,
     }
     public enum LoginResult
     {
@@ -209,6 +328,9 @@ namespace Packets
     {
         [MarshalAs(UnmanagedType.U1)]
         public byte type;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 1)]
+        public string buffer;
     }
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class LoginRequest : Header
@@ -228,7 +350,56 @@ namespace Packets
         [MarshalAs(UnmanagedType.U1)]
         public byte result;
     }
-
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class AllocHero : Header
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte allocNum;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public sbyte[] x;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public sbyte[] y;
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class RandomHeroRequest : Header
+    {
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class RandomHeroResponse : Header
+    {
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public byte[] heroClass;
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class MatchStart : Header
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte turn;
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class GameData : Header
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte turn;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte classNum;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public byte[] classes = new byte[4];
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public sbyte[] hp = new sbyte[4];
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public sbyte[] act = new sbyte[4];
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public sbyte[] skillNum = new sbyte[4];
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public sbyte[] skillIdx = new sbyte[4];
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public sbyte[] skillLevel = new sbyte[4];
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public sbyte[] x = new sbyte[4];
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public sbyte[] y = new sbyte[4];
+    }
 
     public class ByteSerializer<T>
     {
@@ -253,10 +424,27 @@ namespace Packets
             IntPtr ptr = Marshal.AllocHGlobal(cb);
 
             Marshal.Copy(data, 0, ptr, cb);
-
-            Marshal.PtrToStructure(ptr, obj);
-
+            try
+            {
+                Marshal.PtrToStructure(ptr, obj);
+            }
+            catch(Exception e)
+            {
+                Debug.Log(e.ToString());
+            }
             Marshal.FreeHGlobal(ptr);
+        }
+
+
+        public static T Deserialize(byte[] buffer)
+        {
+            unsafe
+            {
+                fixed (byte* ptr = &buffer[0])
+                {
+                    return (T)Marshal.PtrToStructure((IntPtr)ptr, typeof(T));
+                }
+            }
         }
     }
 
