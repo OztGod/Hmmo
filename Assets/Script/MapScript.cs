@@ -13,7 +13,8 @@ public class MapScript : MonoBehaviour {
     MapIndex[] mapCharacterIndexes = null;
 
     int numOfCharacter = 0;
-    int currentSettingIndex = 0;
+    public int currentSettingIndex = -1;
+	int totalSettingNum = 0;
 
     enum CharacterType
     {
@@ -44,17 +45,83 @@ public class MapScript : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {
-	
+	void Update () 
+	{
+		GameObject network = GameObject.FindGameObjectWithTag("Network");
+		if (network.GetComponent<SocketScript>().IsReady)
+		{
+			//ready 박으면 땡
+			return;
+		}
+		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		
+		RaycastHit tileHit;
+
+		RaycastHit hit;
+
+		if (Input.GetMouseButtonDown(0))
+		{
+			if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << 10))
+			{
+				int idx = hit.collider.gameObject.GetComponent<CharacterSelectScript>().idx;
+				if (ChangeSettingIndex(idx))
+				{
+					return;
+				}
+			}
+		}
+
+		if (Physics.Raycast(ray, out tileHit, Mathf.Infinity, 1 << 11))
+		{
+			OnMouseOverTile(tileHit.collider.gameObject.GetComponent<TileScript>().x, tileHit.collider.gameObject.GetComponent<TileScript>().y);
+		}
+		
+	}
+
+	public bool ChangeSettingIndex(int idx)
+	{
+		if (currentSettingIndex == idx)
+			return false;
+
+		if (currentSettingIndex == -1)
+		{
+			currentSettingIndex = idx;
+			characters[currentSettingIndex].GetComponent<Animation>().Play("att01");
+			characters[currentSettingIndex].GetComponent<Animation>().PlayQueued("idle", QueueMode.CompleteOthers);
+			return true;
+		}
+
+		if (mapCharacterIndexes[currentSettingIndex] == null)
+		{
+			characters[currentSettingIndex].transform.position = new Vector3(-3, 0, currentSettingIndex * 9 / 4);
+		}
+		else
+		{
+			characters[currentSettingIndex].transform.position = new Vector3(mapCharacterIndexes[currentSettingIndex].x * 3, 0,
+																			 mapCharacterIndexes[currentSettingIndex].y * 3);
+		}
+
+		currentSettingIndex = idx;
+		characters[currentSettingIndex].GetComponent<Animation>().Play("att01");
+		characters[currentSettingIndex].GetComponent<Animation>().PlayQueued("idle", QueueMode.CompleteOthers);
+
+		return true;
 	}
 
     public void GetRandomCharacters(int[] characterTypes)
     {
         numOfCharacter = Mathf.Min(characterTypes.Length, characters.Length);
+		totalSettingNum = 0;
 
         for (int i = 0; i < numOfCharacter; ++i)
         {
-            CharacterType type = (CharacterType)(i % (int)CharacterType.MAX_NUM);
+			mapCharacterIndexes[i] = null;
+			if (characters[i] != null)
+			{
+				Object.Destroy(characters[i]);
+			}
+
+            CharacterType type = (CharacterType)(characterTypes[i] % (int)CharacterType.MAX_NUM);
             
             switch (type)
             {
@@ -71,15 +138,17 @@ public class MapScript : MonoBehaviour {
                     break;
             };
 
+			characters[i].GetComponent<CharacterSelectScript>().idx = i;
+
             characters[i].transform.parent = gameObject.transform;
             characters[i].transform.position = new Vector3(-3, 0, i * 9/4);
         }
-        currentSettingIndex = 0;
+        currentSettingIndex = -1;
     }
 
     public void OnMouseOverTile(int x, int y)
     {
-        if (currentSettingIndex >= numOfCharacter)
+        if (currentSettingIndex == -1)
         {
             return;
         }
@@ -91,11 +160,17 @@ public class MapScript : MonoBehaviour {
             MapIndex newIndex = new MapIndex();
             newIndex.x = x;
             newIndex.y = y;
-            mapCharacterIndexes[currentSettingIndex++] = newIndex;
-            if(currentSettingIndex >= numOfCharacter)
+
+			if (mapCharacterIndexes[currentSettingIndex] == null)
+				totalSettingNum++;
+
+            mapCharacterIndexes[currentSettingIndex] = newIndex;
+			currentSettingIndex = -1;
+
+            if(totalSettingNum >= numOfCharacter)
             {
                 GameObject network = GameObject.FindGameObjectWithTag("Network");
-                network.GetComponent<SocketScript>().AllocHeros(mapCharacterIndexes);
+                network.GetComponent<SocketScript>().heros = mapCharacterIndexes;
             }
         }
     }

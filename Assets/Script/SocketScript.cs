@@ -14,7 +14,10 @@ public class SocketScript : MonoBehaviour
     string IdInput = "";
     string PswInput = "";
     bool IsLoginSuccess = false;
+	bool IsMatchStart = false;
+	public bool IsReady = false;
     string debugMsg = "";
+	public MapIndex[] heros = null;
 
     void Awake()
     {
@@ -38,20 +41,8 @@ public class SocketScript : MonoBehaviour
         SocketResponse();
     }
 
-    [Merona.Client.PacketId(1)]
-    [StructLayout(LayoutKind.Sequential, Pack=1)]
-    class TestPacket : Merona.Client.Packet
-    {
-
-        public int a;
-
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst=8)]
-        public byte[] data;
-    }
-
     void OnGUI()
     {
-
         //if connection has not been made, display button to connect
         if (false == TcpSession.socketReady)
         {
@@ -86,6 +77,23 @@ public class SocketScript : MonoBehaviour
             Rect rect = new Rect(x, y, width, height);
             GUI.Box(rect, debugMsg);
         }
+
+		if (IsMatchStart && !IsReady)
+		{
+			if (GUILayout.Button("Get Random Hero"))
+			{
+				RequestRandomHero();
+			}
+		}
+
+		if (heros != null && !IsReady)
+		{
+			if (GUILayout.Button("Ready"))
+			{
+				AllocHeros(heros);
+				IsReady = true;
+			}
+		}
     }
 
     //socket reading script
@@ -140,6 +148,7 @@ public class SocketScript : MonoBehaviour
         TcpSession.writeSocket(data);
 
         debugMsg = "Request Random Hero...";
+		heros = null;
     }
 
     public void AllocHeros( MapIndex[] allocIndexes )
@@ -179,7 +188,7 @@ public class SocketScript : MonoBehaviour
 
     void OnMatchStart(Packets.MatchStart result)
     {
-        RequestRandomHero();
+		IsMatchStart = true;
     }
 
     void OnGameData(Packets.GameData result)
