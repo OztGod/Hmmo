@@ -52,7 +52,6 @@ public class SocketScript : MonoBehaviour
                 //try to connect
                 Debug.Log("Attempting to connect..");
                 TcpSession.setupSocket();
-                Camera.main.GetComponent<CameraScript>().OnCameraMove();
             }
             return;
         }
@@ -93,6 +92,9 @@ public class SocketScript : MonoBehaviour
 			{
 				AllocHeros(heros);
 				IsReady = true;
+                GameObject mapManager = GameObject.FindGameObjectWithTag("Map");
+                mapManager.GetComponent<MapManager>().Ready();
+                debugMsg = "Ready...";
 			}
 		}
     }
@@ -194,7 +196,23 @@ public class SocketScript : MonoBehaviour
 
     void OnGameData(Packets.GameData result)
     {
+        HeroData[] heroDatas = new HeroData[4];
+        for(int i =0 ; i < 4; ++i)
+        {
+            heroDatas[i] = new HeroData();
+            Debug.Log("heroClass = " + result.classes[i]);
+            heroDatas[i].heroClass = (HeroClass)result.classes[i];
+            Debug.Log("heroPosition = " + result.x[i] + result.y[i]);
+            heroDatas[i].position.x = result.x[i];
+            heroDatas[i].position.y = result.y[i];
+            Debug.Log("heroState = " + result.hp[i] + result.act[i]);
+            heroDatas[i].hp = result.hp[i];
+            heroDatas[i].stamina = result.act[i];
+        }
 
+        GameObject mapManager = GameObject.FindGameObjectWithTag("Map");
+        mapManager.GetComponent<MapManager>().GetOtherCharacters(heroDatas);
+        debugMsg = "Get GameData!";
     }
 
     void OnRandomHeroResponse(byte[] heros)
@@ -205,8 +223,8 @@ public class SocketScript : MonoBehaviour
             classArray[i] = (int)heros[i];
         }
 
-        GameObject map = GameObject.FindGameObjectWithTag("Map");
-        map.GetComponent<MapScript>().GetRandomCharacters(classArray);
+        GameObject mapManager = GameObject.FindGameObjectWithTag("Map");
+        mapManager.GetComponent<MapManager>().GetRandomCharacters(classArray);
         debugMsg = "Character Setting...";
     }
 
@@ -305,18 +323,26 @@ public class MapIndex
     public int y = 1;
 }
 
+public enum HeroClass
+{
+    FIGHTER = 0,
+    MAGICIAN = 1,
+    ARCHER = 2,
+    THIEF = 3,
+    PRIEST = 4,
+    MONK = 5,
+};
+
+public class HeroData
+{
+    public MapIndex position = new MapIndex();
+    public HeroClass heroClass;
+    public int hp;
+    public int stamina;
+}
+
 namespace Packets
 {
-
-    public enum HeroClass
-    {
-        FIGHTER = 0,
-        MAGICIAN = 1,
-        ARCHER = 2,
-        THIEF = 3,
-        PRIEST = 4,
-        MONK = 5,
-    }
     public enum Type
     {
         LOGIN_REQUEST = 0,

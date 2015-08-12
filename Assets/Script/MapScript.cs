@@ -15,6 +15,7 @@ public class MapScript : MonoBehaviour {
     int numOfCharacter = 0;
     public int currentSettingIndex = -1;
 	int totalSettingNum = 0;
+    bool nowPositioning = false;
 
     enum CharacterType
     {
@@ -37,9 +38,9 @@ public class MapScript : MonoBehaviour {
             {
                 GameObject tile = Instantiate(TilePrefab) as GameObject;
                 tiles[x + y*3] = tile;
-                tile.transform.parent = transform;
                 tile.GetComponent<TileScript>().SetIndex(x, y);
-                tile.transform.position = new Vector3(x * 3, 0, y * 3);
+                tile.transform.parent = transform;
+                tile.transform.localPosition = new Vector3(x * 3, 0, y * 3);
             }
         }
 	}
@@ -47,12 +48,9 @@ public class MapScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () 
 	{
-		GameObject network = GameObject.FindGameObjectWithTag("Network");
-		if (network.GetComponent<SocketScript>().IsReady)
-		{
-			//ready 박으면 땡
-			return;
-		}
+        if (!nowPositioning)
+            return;
+
 		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 		
 		RaycastHit tileHit;
@@ -78,6 +76,11 @@ public class MapScript : MonoBehaviour {
 		
 	}
 
+    public void SetPositioning(bool value)
+    {
+        nowPositioning = value;
+    }
+
 	public bool ChangeSettingIndex(int idx)
 	{
 		if (currentSettingIndex == idx)
@@ -93,11 +96,11 @@ public class MapScript : MonoBehaviour {
 
 		if (mapCharacterIndexes[currentSettingIndex] == null)
 		{
-			characters[currentSettingIndex].transform.position = new Vector3(-3, 0, currentSettingIndex * 9 / 4);
+            characters[currentSettingIndex].transform.localPosition = new Vector3(-3, 0, currentSettingIndex * 9 / 4);
 		}
 		else
 		{
-			characters[currentSettingIndex].transform.position = new Vector3(mapCharacterIndexes[currentSettingIndex].x * 3, 0,
+            characters[currentSettingIndex].transform.localPosition = new Vector3(mapCharacterIndexes[currentSettingIndex].x * 3, 0,
 																			 mapCharacterIndexes[currentSettingIndex].y * 3);
 		}
 
@@ -140,10 +143,45 @@ public class MapScript : MonoBehaviour {
 
 			characters[i].GetComponent<CharacterSelectScript>().idx = i;
 
-            characters[i].transform.parent = gameObject.transform;
-            characters[i].transform.position = new Vector3(-3, 0, i * 9/4);
+            characters[i].transform.parent = transform;
+            characters[i].transform.localPosition = new Vector3(-3, 0, i * 9/4);
         }
         currentSettingIndex = -1;
+    }
+
+    public void GetFixedHerosAndPosition(HeroData[] heroDatas)
+    {
+        numOfCharacter = Mathf.Min(heroDatas.Length, characters.Length);
+        totalSettingNum = 0;
+        for (int i = 0; i < numOfCharacter; ++i)
+        {
+            mapCharacterIndexes[i] = heroDatas[i].position;
+            if (characters[i] != null)
+            {
+                Object.Destroy(characters[i]);
+            }
+
+            CharacterType type = (CharacterType)((int)heroDatas[i].heroClass % (int)CharacterType.MAX_NUM);
+
+            switch (type)
+            {
+                case CharacterType.ARCHER:
+                    characters[i] = Instantiate(ArcherPrefab) as GameObject;
+                    break;
+                case CharacterType.SWORD_MAN:
+                    characters[i] = Instantiate(SwordPrefab) as GameObject;
+                    break;
+                case CharacterType.MAGICIAN:
+                    characters[i] = Instantiate(MagicianPrefab) as GameObject;
+                    break;
+                default:
+                    break;
+            };
+            characters[i].GetComponent<CharacterSelectScript>().idx = i;
+            characters[i].transform.parent = gameObject.transform;
+            characters[i].transform.localPosition = new Vector3(heroDatas[i].position.x * 3, 0, heroDatas[i].position.y * 3);
+            characters[i].transform.localRotation = transform.rotation;
+        }
     }
 
     public void OnMouseOverTile(int x, int y)
@@ -153,7 +191,7 @@ public class MapScript : MonoBehaviour {
             return;
         }
 
-        characters[currentSettingIndex].transform.position = new Vector3(x * 3, 0, y * 3);
+        characters[currentSettingIndex].transform.localPosition = new Vector3(x * 3, 0, y * 3);
 
         if(Input.GetMouseButtonDown(0))
         {
