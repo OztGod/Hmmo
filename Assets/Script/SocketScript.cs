@@ -18,6 +18,7 @@ public class SocketScript : MonoBehaviour
 	public bool IsReady = false;
     string debugMsg = "";
 	public MapIndex[] heros = null;
+	int MyTurn = 0;
 
     void Awake()
     {
@@ -192,10 +193,14 @@ public class SocketScript : MonoBehaviour
     void OnMatchStart(Packets.MatchStart result)
     {
 		IsMatchStart = true;
+		MyTurn = result.turn;
     }
 
     void OnGameData(Packets.GameData result)
     {
+		if (result.turn == MyTurn)
+			return;
+
         HeroData[] heroDatas = new HeroData[4];
         for(int i =0 ; i < 4; ++i)
         {
