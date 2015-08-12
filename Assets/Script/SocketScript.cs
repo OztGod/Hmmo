@@ -52,6 +52,7 @@ public class SocketScript : MonoBehaviour
                 //try to connect
                 Debug.Log("Attempting to connect..");
                 TcpSession.setupSocket();
+                Camera.main.GetComponent<CameraScript>().OnCameraMove();
             }
             return;
         }
