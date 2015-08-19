@@ -8,14 +8,14 @@ public class MapScript : MonoBehaviour {
     public GameObject SwordPrefab;
     public GameObject MagicianPrefab;
     public GameObject SpotLight;
-    public int currentSettingIndex = -1;
+    public int selectedHeroIdx = -1;
 
     GameObject[] tiles = new GameObject[9];
     GameObject[] characters = new GameObject[4];
     MapIndex[] mapCharacterIndexes = new MapIndex[4];
     Vector2 lastMouseClickedPosition = new Vector2();
     MapIndex curMouseOveredIndex = new MapIndex();
-
+    bool isPrePositioning = false;
 
     public enum CharacterType
     {
@@ -133,7 +133,7 @@ public class MapScript : MonoBehaviour {
             if (Input.GetMouseButtonDown(0))
             {
                 lastMouseClickedPosition = Input.mousePosition;
-                CharacterMove(curMouseOveredIndex);
+                CharacterMoveRequest(curMouseOveredIndex);
                 selectState = MapSelectState.NO_SELECT;
             }
 
@@ -152,12 +152,12 @@ public class MapScript : MonoBehaviour {
             curMouseOveredIndex.posY = tileHit.collider.gameObject.GetComponent<TileScript>().y;
 
             GameObject curTile = GetTile(curMouseOveredIndex);
-            curTile.GetComponent<TileScript>().ChangeTileState(TileScript.TileState.MOVE);
+            curTile.GetComponent<TileScript>().ChangeTileState(TileScript.TileState.ATTACK);
 
             if(Input.GetMouseButton(0))
             {
                 lastMouseClickedPosition = Input.mousePosition;
-                CharacterAttack(curMouseOveredIndex);
+                CharacterActionRequest(curMouseOveredIndex);
                 selectState = MapSelectState.NO_SELECT;
             }
         }
@@ -169,9 +169,9 @@ public class MapScript : MonoBehaviour {
         if(selectState == MapSelectState.CHARACTER_SELECT)
         {
             string msg = "==No Select==";
-            if(currentSettingIndex != -1)
+            if(selectedHeroIdx != -1)
             {
-                msg = characters[currentSettingIndex].GetComponent<CharacterScript>().GetInfoString();
+                msg = characters[selectedHeroIdx].GetComponent<CharacterScript>().GetInfoString();
             }
 
             float width = 150.0f;
@@ -186,48 +186,80 @@ public class MapScript : MonoBehaviour {
             float buttonY = y + 50;
 
             GUILayout.BeginArea(new Rect(buttonX, buttonY, buttonWidth, buttonHeight));
-            if(currentSettingIndex != -1 && GUILayout.Button("Move"))
+            if(selectedHeroIdx != -1 && GUILayout.Button("MOVE"))
             {
                 selectState = MapSelectState.MOVE_SELECT;
             }
             GUILayout.EndArea();
+
+            GUILayout.BeginArea(new Rect(buttonX, buttonY + 55, buttonWidth, buttonHeight));
+            if (GUILayout.Button("END TURN"))
+            {
+                MyTurnEnd();
+            }
+            GUILayout.EndArea();
+
         }
+    }
+
+    public void SynchronizeState(HeroStateModel model)
+    {
+        GameObject hero = characters[model.index];
+        Vector3 newPos = GetTile(model.position).transform.position;
+        hero.GetComponent<CharacterScript>().Move(newPos, model.position.posX, model.position.posY);
+        hero.GetComponent<CharacterScript>().UpdateState(model);
     }
 
     public void MakeFormation()
     {
+        selectedHeroIdx = -1;
+        isPrePositioning = true;
         selectState = MapSelectState.CHARACTER_SELECT;
     }
 
     public void FormationEnd()
     {
+        isPrePositioning = false;
         selectState = MapSelectState.NO_SELECT;
+    }
+
+    public void MyTurnStart()
+    {
+        selectedHeroIdx = -1;
+        selectState = MapSelectState.CHARACTER_SELECT;
+    }
+
+    public void MyTurnEnd()
+    {
+        selectState = MapSelectState.NO_SELECT;
+        GameObject network = GameObject.FindGameObjectWithTag("Network");
+        network.GetComponent<SocketScript>().RequestTurnEnd();
     }
 
 	public bool ChangeSettingIndex(int idx)
 	{
-		if (currentSettingIndex == idx)
+		if (selectedHeroIdx == idx)
 			return false;
 
-		if (currentSettingIndex == -1)
+		if (selectedHeroIdx == -1)
 		{
-			currentSettingIndex = idx;
-            characters[currentSettingIndex].GetComponent<CharacterScript>().SelectHero();
+			selectedHeroIdx = idx;
+            characters[selectedHeroIdx].GetComponent<CharacterScript>().SelectHero();
 			return true;
 		}
 
-		if (mapCharacterIndexes[currentSettingIndex] == null)
+		if (mapCharacterIndexes[selectedHeroIdx] == null)
 		{
-            characters[currentSettingIndex].transform.localPosition = new Vector3(-3, 0, currentSettingIndex * 9 / 4);
+            characters[selectedHeroIdx].transform.localPosition = new Vector3(-3, 0, selectedHeroIdx * 9 / 4);
 		}
 		else
 		{
-            characters[currentSettingIndex].transform.localPosition = new Vector3(mapCharacterIndexes[currentSettingIndex].posX * 3, 0,
-																			 mapCharacterIndexes[currentSettingIndex].posY * 3);
+            characters[selectedHeroIdx].transform.localPosition = new Vector3(mapCharacterIndexes[selectedHeroIdx].posX * 3, 0,
+																			 mapCharacterIndexes[selectedHeroIdx].posY * 3);
 		}
 
-		currentSettingIndex = idx;
-        characters[currentSettingIndex].GetComponent<CharacterScript>().SelectHero();
+		selectedHeroIdx = idx;
+        characters[selectedHeroIdx].GetComponent<CharacterScript>().SelectHero();
 		return true;
 	}
 
@@ -270,7 +302,7 @@ public class MapScript : MonoBehaviour {
             characters[index].transform.parent = transform;
             characters[index].GetComponent<CharacterScript>().PrePositioning(index);
         }
-        currentSettingIndex = -1;
+        selectedHeroIdx = -1;
     }
 
     public void GetFixedHerosAndPosition(HeroModel[] heroModels)
@@ -307,16 +339,6 @@ public class MapScript : MonoBehaviour {
         }
     }
 
-    public void OnMouseOverTile(int x, int y)
-    {
-        if (currentSettingIndex == -1)
-        {
-            return;
-        }
-
-
-    }
-
     public void CharacterActionEnd()
     {
         selectState = MapSelectState.CHARACTER_SELECT;
@@ -330,36 +352,44 @@ public class MapScript : MonoBehaviour {
             return null;
     }
 
-    void CharacterMove(MapIndex index)
+    void CharacterMoveRequest(MapIndex index)
     {
-        Vector3 newPos = GetTile(index).transform.position;
-        characters[currentSettingIndex].GetComponent<CharacterScript>().Move(newPos, index.posX, index.posY);
+        if (isPrePositioning)
+        {
+            Vector3 newPos = GetTile(index).transform.position;
+            characters[selectedHeroIdx].GetComponent<CharacterScript>().Move(newPos, index.posX, index.posY);
 
-        if (mapCharacterIndexes[currentSettingIndex] == null)
-            totalSettingNum++;
+            if (mapCharacterIndexes[selectedHeroIdx] == null)
+                totalSettingNum++;
 
-        mapCharacterIndexes[currentSettingIndex] = new MapIndex(curMouseOveredIndex);
-        currentSettingIndex = -1;
+            mapCharacterIndexes[selectedHeroIdx] = new MapIndex(curMouseOveredIndex);
+            selectedHeroIdx = -1;
 
-        if (totalSettingNum >= numOfCharacter)
+            if (totalSettingNum >= numOfCharacter)
+            {
+                GameObject network = GameObject.FindGameObjectWithTag("Network");
+                network.GetComponent<SocketScript>().heros = mapCharacterIndexes;
+            }
+        }
+        else
         {
             GameObject network = GameObject.FindGameObjectWithTag("Network");
-            network.GetComponent<SocketScript>().heros = mapCharacterIndexes;
+            network.GetComponent<SocketScript>().RequestMove(selectedHeroIdx, index);
         }
     }
 
-    void CharacterAttack(MapIndex index)
+    void CharacterActionRequest(MapIndex index)
     {
-
+        //TODO
     }
 
 
     ArrayList GetMovableIndexes()
     {
         ArrayList resultList = new ArrayList();
-        if(currentSettingIndex != -1)
+        if(selectedHeroIdx != -1)
         {
-            if(mapCharacterIndexes[currentSettingIndex] == null)
+            if(mapCharacterIndexes[selectedHeroIdx] == null)
             {
                 for (int xIdx = 0; xIdx < 3; ++xIdx) 
                     for (int yIdx = 0; yIdx < 3; ++yIdx)
@@ -369,7 +399,7 @@ public class MapScript : MonoBehaviour {
             }
             else
             {
-                MapIndex stdIndex = mapCharacterIndexes[currentSettingIndex];
+                MapIndex stdIndex = mapCharacterIndexes[selectedHeroIdx];
                 resultList.Add(new MapIndex(stdIndex.posX + 1, stdIndex.posY));
                 resultList.Add(new MapIndex(stdIndex.posX - 1, stdIndex.posY));
                 resultList.Add(new MapIndex(stdIndex.posX, stdIndex.posY + 1));

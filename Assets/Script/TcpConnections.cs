@@ -10,7 +10,7 @@ public class TCPConnections : MonoBehaviour
     public string conName = "GodHW";
 
     //ip/address of the server, 127.0.0.1 is for your own computer
-    public string conHost = "10.73.43.238";
+    public string conHost = "10.73.44.30";
 
     //port for the server, make sure to unblock this in your router firewall if you want to allow external connections
     public int conPort = 41010;

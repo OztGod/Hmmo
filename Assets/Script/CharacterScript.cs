@@ -17,10 +17,10 @@ public class CharacterScript : MonoBehaviour
     public int MaxHP { get { return maxHp; } }
     int currentHp = 0;
     public int CurrentHP { get { return currentHp; } }
-    int maxStamina = 0;
-    public int MaxStamina { get { return maxStamina; } }
-    int currentStamina = 0;
-    public int CurrentStamina { get { return currentStamina; } }
+    int maxAp = 0;
+    public int MaxAp { get { return maxAp; } }
+    int currentAp = 0;
+    public int CurrentAp { get { return currentAp; } }
 
 
 
@@ -59,7 +59,13 @@ public class CharacterScript : MonoBehaviour
                 break;
         }
 
-        return "[" + index + "]" + classString + "(" + currentHp + "/" + currentStamina + ")";
+        return "[" + index + "]" + classString + "(" + currentHp + "/" + currentAp + ")";
+    }
+
+    public void UpdateState(HeroStateModel model)
+    {
+        currentHp = model.hp;
+        currentAp = model.act;
     }
 
     public int SelectHero()
@@ -88,8 +94,8 @@ public class CharacterScript : MonoBehaviour
         heroClass = data.heroClass;
         maxHp = data.hp;
         currentHp = data.hp;
-        maxStamina = data.stamina;
-        currentStamina = data.stamina;
+        maxAp = data.ap;
+        currentAp = data.ap;
         SetPosition(data.position.posX, data.position.posY);
         transform.localRotation = transform.parent.rotation;
     }

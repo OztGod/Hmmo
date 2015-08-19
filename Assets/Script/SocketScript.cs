@@ -175,6 +175,30 @@ public class SocketScript : MonoBehaviour
         debugMsg = "Alloc Hero...";
     }
 
+    public void RequestMove(int heroIndex, MapIndex position)
+    {
+        Packets.MoveHero packet = new Packets.MoveHero();
+        packet.type = (byte)Packets.Type.MOVE_HERO;
+        packet.idx = (sbyte)heroIndex;
+        packet.x = (sbyte)position.posX;
+        packet.y = (sbyte)position.posY;
+        byte[] data = Packets.ByteSerializer<Packets.MoveHero>.GetBytes(packet);
+        TcpSession.writeSocket(data);
+
+        debugMsg = "Request Move...";
+    }
+
+    public void RequestTurnEnd()
+    {
+        Packets.TurnEnd packet = new Packets.TurnEnd();
+        packet.type = (byte)Packets.Type.TURN_END;
+        packet.turn = (sbyte)MyTurn;
+        byte[] data = Packets.ByteSerializer<Packets.TurnEnd>.GetBytes(packet);
+        TcpSession.writeSocket(data);
+
+        debugMsg = "Request Move...";
+    }
+
     void OnLoginResponse(Packets.LoginResult result)
     {
         switch(result)
@@ -209,13 +233,28 @@ public class SocketScript : MonoBehaviour
             heroDatas[i].position.posY = result.y[i];
             Debug.Log("heroState = " + result.hp[i] + result.act[i]);
             heroDatas[i].hp = result.hp[i];
-            heroDatas[i].stamina = result.act[i];
+            heroDatas[i].ap = result.act[i];
         }
 
         bool isMyData = result.turn == MyTurn;
         GameObject mapManager = GameObject.FindGameObjectWithTag("Map");
         mapManager.GetComponent<MapManager>().GetCharacters(heroDatas, isMyData);
         debugMsg = "Get GameData!";
+    }
+
+    void OnChangeHeroState(Packets.ChangeHeroState packet)
+    {
+        HeroStateModel model = new HeroStateModel();
+        model.act = packet.act;
+        model.hp = packet.hp;
+        model.index = packet.idx;
+        model.position.posX = packet.x;
+        model.position.posY = packet.y;
+
+        bool isMine = MyTurn == packet.turn;
+
+        GameObject mapManager = GameObject.FindGameObjectWithTag("Map");
+        mapManager.GetComponent<MapManager>().SynchronizeState(model, isMine);
     }
 
     void OnRandomHeroResponse(byte[] heros)
@@ -229,6 +268,14 @@ public class SocketScript : MonoBehaviour
         GameObject mapManager = GameObject.FindGameObjectWithTag("Map");
         mapManager.GetComponent<MapManager>().GetRandomCharacters(classArray);
         debugMsg = "Character Setting...";
+    }
+
+    void OnUpdateTurn(Packets.UpdateTurn packet)
+    {
+        bool isMine = packet.nowTurn == MyTurn;
+        GameObject mapManager = GameObject.FindGameObjectWithTag("Map");
+        mapManager.GetComponent<MapManager>().TurnStart(isMine);
+        debugMsg = "Update turn...";
     }
 
     bool PacketHandler(Packets.Type type)
@@ -308,6 +355,43 @@ public class SocketScript : MonoBehaviour
                 }
                 break;
 
+
+            case Packets.Type.CHANGE_HERO_STATE:
+                {
+                    int packetSize = Marshal.SizeOf(typeof(Packets.ChangeHeroState));
+                    if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
+                        return false;
+                    }
+
+                    debugMsg = "ChangeHeroState...";
+                    Packets.ChangeHeroState packet = new Packets.ChangeHeroState();
+                    byte[] buffer = new byte[packetSize];
+                    RecvBuffer.Read(ref buffer, packetSize);
+
+                    Packets.ByteSerializer<Packets.ChangeHeroState>.ByteToObj(ref packet, buffer);
+                    OnChangeHeroState(packet);
+                }
+                break;
+
+            case Packets.Type.UPDATE_TURN:
+                {
+                    int packetSize = Marshal.SizeOf(typeof(Packets.UpdateTurn));
+                    if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
+                        return false;
+                    }
+
+                    debugMsg = "ChangeHeroState...";
+                    Packets.UpdateTurn packet = new Packets.UpdateTurn();
+                    byte[] buffer = new byte[packetSize];
+                    RecvBuffer.Read(ref buffer, packetSize);
+
+                    Packets.ByteSerializer<Packets.UpdateTurn>.ByteToObj(ref packet, buffer);
+                    OnUpdateTurn(packet);
+                }
+                break;
+
             default:
                 break;
         }
@@ -364,11 +448,20 @@ public class HeroModel
     public MapIndex position = new MapIndex();
     public HeroClass heroClass;
     public int hp;
-    public int stamina;
+    public int ap;
+}
+
+public class HeroStateModel
+{
+    public int index;
+    public int hp;
+    public int act;
+    public MapIndex position = new MapIndex();
 }
 
 namespace Packets
 {
+
     public enum Type
     {
         LOGIN_REQUEST = 0,
@@ -378,13 +471,50 @@ namespace Packets
         RANDOM_HERO_RESPONSE = 4,
         MATCH_START = 5,
         GAME_DATA = 6,
-        TYPE_NUM = 7,
+        CHANGE_HERO_STATE = 7,
+        SELECT_HERO = 8,
+        VALID_SKILLS = 9,
+        SKILL_RANGE_REQUEST = 10,
+        SKILL_RANGE_RESPONSE = 11,
+        MOVE_HERO = 12,
+        ACT_HERO = 13,
+        TURN_END = 14,
+        UPDATE_TURN = 15,
+        TYPE_NUM = 16,
+    }
+    public enum SkillType
+    {
+        FIGHTER_ATTACK = 0,
+        FIGHTER_CHARGE = 1,
+        FIGHTER_HARD = 2,
+        FIGHTER_IRON = 3,
+        MAGICIAN_ICE_ARROW = 4,
+        MAGICIAN_FIRE_BLAST = 5,
+        MAGICIAN_THUNDER_STORM = 6,
+        MAGICIAN_POLYMORPH = 7,
+        ARCHER_ATTACK = 8,
+        ARCHER_BACK_ATTACK = 9,
+        ARCHER_PENETRATE_SHOT = 10,
+        ARCHER_SNIPE = 11,
+        THIEF_ATTACK = 12,
+        THIEF_BACK_STEP = 13,
+        THIEF_POISON = 14,
+        THIEF_TAUNT = 15,
+        PRIEST_HEAL = 16,
+        PRIEST_ATTACK = 17,
+        PRIEST_BUFF = 18,
+        PRIEST_REMOVE_MAGIC = 19,
+        MONK_ATTACK = 20,
+        MONK_SACRIFICE = 21,
+        MONK_PRAY = 22,
+        MONK_KICK = 23,
     }
     public enum LoginResult
     {
         FAILED = 0,
         SUCCESS = 1,
     }
+
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class Header
     {
@@ -461,6 +591,105 @@ namespace Packets
         public sbyte[] x = new sbyte[4];
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
         public sbyte[] y = new sbyte[4];
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class MoveHero : Header
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte idx;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte x;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte y;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class ChangeHeroState : Header
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte turn;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte idx;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte hp;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte act;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte x;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte y;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class TurnEnd : Header
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte turn;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class UpdateTurn : Header
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte nowTurn;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class SelectHero : Header
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte idx;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class ValidSkills : Header
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte num;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
+        public sbyte[] idx = new sbyte[6];
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class SkillRangeRequest : Header
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte heroIdx;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte skillIdx;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class SkillRangeResponse : Header
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte isMyField;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte rangeNum;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 9)]
+        public sbyte[] rangeX = new sbyte[9];
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 9)]
+        public sbyte[] rangeY = new sbyte[9];
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte effectNum;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 9)]
+        public sbyte[] effectX = new sbyte[9];
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 9)]
+        public sbyte[] effectY = new sbyte[9];
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class ActHero : Header
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte heroIdx;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte skillIdx;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte x;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte y;
     }
 
     public class ByteSerializer<T>

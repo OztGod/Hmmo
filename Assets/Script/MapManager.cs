@@ -8,14 +8,14 @@ public class MapManager : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         myMap = transform.GetChild(0).GetComponent<MapScript>();
-        myMap.MakeFormation();
+        /*
         int[] array = new int[4];
         for(int i = 0 ;i < array.Length; ++i)
         {
             array[i] = Random.Range(0, 4);
         }
         myMap.GetRandomCharacters(array);
-        
+        */
         otherMap = transform.GetChild(1).GetComponent<MapScript>();
 	}
 	
@@ -33,17 +33,38 @@ public class MapManager : MonoBehaviour {
     public void GetRandomCharacters(int[] characterTypes)
     {
         myMap.GetRandomCharacters(characterTypes);
+        myMap.MakeFormation();
     }
 
-    public void GetCharacters(HeroModel[] datas, bool isMine)
+    public void GetCharacters(HeroModel[] models, bool isMine)
     {
         if (isMine)
         {
-            myMap.GetFixedHerosAndPosition(datas);
+            myMap.GetFixedHerosAndPosition(models);
         }
         else
         {
-            otherMap.GetFixedHerosAndPosition(datas);
+            otherMap.GetFixedHerosAndPosition(models);
+        }
+    }
+
+    public void SynchronizeState(HeroStateModel model, bool isMine)
+    {
+        if (isMine)
+        {
+            myMap.SynchronizeState(model);
+        }
+        else
+        {
+            otherMap.SynchronizeState(model);
+        }
+    }
+
+    public void TurnStart(bool isMine)
+    {
+        if (isMine)
+        {
+            myMap.MyTurnStart();
         }
     }
 }
