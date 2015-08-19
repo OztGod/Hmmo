@@ -165,8 +165,8 @@ public class SocketScript : MonoBehaviour
 
         for(int i= 0 ; i < allocIndexes.Length ; ++i)
         {
-            packet.x[i] = (sbyte)(allocIndexes[i].x);
-            packet.y[i] = (sbyte)(allocIndexes[i].y);
+            packet.x[i] = (sbyte)(allocIndexes[i].posX);
+            packet.y[i] = (sbyte)(allocIndexes[i].posY);
         }
 
         byte[] data = Packets.ByteSerializer<Packets.AllocHero>.GetBytes(packet);
@@ -198,25 +198,23 @@ public class SocketScript : MonoBehaviour
 
     void OnGameData(Packets.GameData result)
     {
-		if (result.turn == MyTurn)
-			return;
-
-        HeroData[] heroDatas = new HeroData[4];
+        HeroModel[] heroDatas = new HeroModel[4];
         for(int i =0 ; i < 4; ++i)
         {
-            heroDatas[i] = new HeroData();
+            heroDatas[i] = new HeroModel();
             Debug.Log("heroClass = " + result.classes[i]);
             heroDatas[i].heroClass = (HeroClass)result.classes[i];
             Debug.Log("heroPosition = " + result.x[i] + result.y[i]);
-            heroDatas[i].position.x = result.x[i];
-            heroDatas[i].position.y = result.y[i];
+            heroDatas[i].position.posX = result.x[i];
+            heroDatas[i].position.posY = result.y[i];
             Debug.Log("heroState = " + result.hp[i] + result.act[i]);
             heroDatas[i].hp = result.hp[i];
             heroDatas[i].stamina = result.act[i];
         }
 
+        bool isMyData = result.turn == MyTurn;
         GameObject mapManager = GameObject.FindGameObjectWithTag("Map");
-        mapManager.GetComponent<MapManager>().GetOtherCharacters(heroDatas);
+        mapManager.GetComponent<MapManager>().GetCharacters(heroDatas, isMyData);
         debugMsg = "Get GameData!";
     }
 
@@ -321,11 +319,34 @@ public class SocketScript : MonoBehaviour
 
 public class MapIndex
 {
+    public MapIndex() 
+    {
+        posX = 0;
+        posY = 0;
+    }
+
+    public MapIndex(int x, int y)
+    {
+        posX = x;
+        posY = y;
+    }
+
+    public MapIndex(MapIndex other)
+    {
+        posX = other.posX;
+        posY = other.posY;
+    }
+
     private int maxX = 3;
     private int maxY = 3;
 
-    public int x = 1;
-    public int y = 1;
+    public int posX = 1;
+    public int posY = 1;
+
+    public bool IsValid()
+    {
+        return posX >= 0 && posX < maxX && posY >= 0 && posY < maxY;
+    }
 }
 
 public enum HeroClass
@@ -338,7 +359,7 @@ public enum HeroClass
     MONK = 5,
 };
 
-public class HeroData
+public class HeroModel
 {
     public MapIndex position = new MapIndex();
     public HeroClass heroClass;

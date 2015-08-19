@@ -7,17 +7,17 @@ public class MapScript : MonoBehaviour {
     public GameObject ArcherPrefab;
     public GameObject SwordPrefab;
     public GameObject MagicianPrefab;
-
-    GameObject[] tiles = null;
-    GameObject[] characters = null;
-    MapIndex[] mapCharacterIndexes = null;
-
-    int numOfCharacter = 0;
+    public GameObject SpotLight;
     public int currentSettingIndex = -1;
-	int totalSettingNum = 0;
-    bool nowPositioning = false;
 
-    enum CharacterType
+    GameObject[] tiles = new GameObject[9];
+    GameObject[] characters = new GameObject[4];
+    MapIndex[] mapCharacterIndexes = new MapIndex[4];
+    Vector2 lastMouseClickedPosition = new Vector2();
+    MapIndex curMouseOveredIndex = new MapIndex();
+
+
+    public enum CharacterType
     {
         ARCHER,
         SWORD_MAN,
@@ -25,12 +25,20 @@ public class MapScript : MonoBehaviour {
         MAX_NUM,
     }
 
+    enum MapSelectState
+    {
+        NO_SELECT,
+        CHARACTER_SELECT,
+        MOVE_SELECT,
+        ATTACK_SELECT,
+    }
+
+    int numOfCharacter = 0;
+	int totalSettingNum = 0;
+    MapSelectState selectState = MapSelectState.NO_SELECT;
+
 	// Use this for initialization
 	void Start () {
-
-        tiles = new GameObject[9];
-        characters = new GameObject[4];
-        mapCharacterIndexes = new MapIndex[4];
 
         for(int x = 0; x < 3; ++x)
         {
@@ -43,42 +51,157 @@ public class MapScript : MonoBehaviour {
                 tile.transform.localPosition = new Vector3(x * 3, 0, y * 3);
             }
         }
+
+        lastMouseClickedPosition.x = Screen.width / 2;
+        lastMouseClickedPosition.y = Screen.height / 5;
+
 	}
 	
 	// Update is called once per frame
 	void Update () 
 	{
-        if (!nowPositioning)
-            return;
-
-		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-		
-		RaycastHit tileHit;
-
-		RaycastHit hit;
-
-		if (Input.GetMouseButtonDown(0))
-		{
-			if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << 10))
-			{
-				int idx = hit.collider.gameObject.GetComponent<CharacterSelectScript>().idx;
-				if (ChangeSettingIndex(idx))
-				{
-					return;
-				}
-			}
-		}
-
-		if (Physics.Raycast(ray, out tileHit, Mathf.Infinity, 1 << 11))
-		{
-			OnMouseOverTile(tileHit.collider.gameObject.GetComponent<TileScript>().x, tileHit.collider.gameObject.GetComponent<TileScript>().y);
-		}
-		
+        switch(selectState)
+        {
+            case MapSelectState.NO_SELECT:
+                break;
+            case MapSelectState.CHARACTER_SELECT:
+                OnCharacterSelect();
+                break;
+            case MapSelectState.MOVE_SELECT:
+                OnMoveSelect();
+                break;
+            case MapSelectState.ATTACK_SELECT:
+                OnAttackSelect();
+                break;
+        }
 	}
 
-    public void SetPositioning(bool value)
+    void OnCharacterSelect()
     {
-        nowPositioning = value;
+        foreach (GameObject tile in tiles)
+        {
+            tile.GetComponent<TileScript>().ChangeTileState(TileScript.TileState.NORMAL);
+        }
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << 10))
+            {
+                lastMouseClickedPosition = Input.mousePosition;
+                var character = hit.collider.gameObject;
+                int characterIndex = character.GetComponent<CharacterScript>().Index;
+                SpotLight.transform.position = new Vector3(character.transform.position.x, 13.5f, character.transform.position.z);
+                SpotLight.transform.parent = character.transform;
+
+                if (ChangeSettingIndex(characterIndex))
+                {
+                    return;
+                }
+            }
+        }
+        return;
+    }
+
+    void OnMoveSelect()
+    {
+        foreach(MapIndex index in GetMovableIndexes())
+        {
+            GameObject tile = GetTile(index);
+            if (tile != null)
+            {
+                var tileScript = tile.GetComponent<TileScript>();
+                if (tileScript.GetIndex() != curMouseOveredIndex)
+                {
+                    tileScript.ChangeTileState(TileScript.TileState.MOVABLE);
+                }
+            }
+        }
+
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit tileHit;
+
+        if (Physics.Raycast(ray, out tileHit, Mathf.Infinity, 1 << 11))
+        {
+            curMouseOveredIndex.posX = tileHit.collider.gameObject.GetComponent<TileScript>().x;
+            curMouseOveredIndex.posY = tileHit.collider.gameObject.GetComponent<TileScript>().y;
+
+            GetTile(curMouseOveredIndex).GetComponent<TileScript>().ChangeTileState(TileScript.TileState.MOVE);
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                lastMouseClickedPosition = Input.mousePosition;
+                CharacterMove(curMouseOveredIndex);
+                selectState = MapSelectState.NO_SELECT;
+            }
+
+        }
+        return;
+    }
+
+    void OnAttackSelect()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit tileHit;
+
+        if (Physics.Raycast(ray, out tileHit, Mathf.Infinity, 1 << 11))
+        {
+            curMouseOveredIndex.posX = tileHit.collider.gameObject.GetComponent<TileScript>().x;
+            curMouseOveredIndex.posY = tileHit.collider.gameObject.GetComponent<TileScript>().y;
+
+            GameObject curTile = GetTile(curMouseOveredIndex);
+            curTile.GetComponent<TileScript>().ChangeTileState(TileScript.TileState.MOVE);
+
+            if(Input.GetMouseButton(0))
+            {
+                lastMouseClickedPosition = Input.mousePosition;
+                CharacterAttack(curMouseOveredIndex);
+                selectState = MapSelectState.NO_SELECT;
+            }
+        }
+        return;
+    }
+
+    void OnGUI()
+    {
+        if(selectState == MapSelectState.CHARACTER_SELECT)
+        {
+            string msg = "==No Select==";
+            if(currentSettingIndex != -1)
+            {
+                msg = characters[currentSettingIndex].GetComponent<CharacterScript>().GetInfoString();
+            }
+
+            float width = 150.0f;
+            float height = 100.0f;
+            float x = lastMouseClickedPosition.x;
+            float y = lastMouseClickedPosition.y;
+            GUI.Box(new Rect(x, y, width, height), msg);
+
+            float buttonWidth = 100;
+            float buttonHeight = 50;
+            float buttonX = x + 25;
+            float buttonY = y + 50;
+
+            GUILayout.BeginArea(new Rect(buttonX, buttonY, buttonWidth, buttonHeight));
+            if(currentSettingIndex != -1 && GUILayout.Button("Move"))
+            {
+                selectState = MapSelectState.MOVE_SELECT;
+            }
+            GUILayout.EndArea();
+        }
+    }
+
+    public void MakeFormation()
+    {
+        selectState = MapSelectState.CHARACTER_SELECT;
+    }
+
+    public void FormationEnd()
+    {
+        selectState = MapSelectState.NO_SELECT;
     }
 
 	public bool ChangeSettingIndex(int idx)
@@ -89,8 +212,7 @@ public class MapScript : MonoBehaviour {
 		if (currentSettingIndex == -1)
 		{
 			currentSettingIndex = idx;
-			characters[currentSettingIndex].GetComponent<Animation>().Play("att01");
-			characters[currentSettingIndex].GetComponent<Animation>().PlayQueued("idle", QueueMode.CompleteOthers);
+            characters[currentSettingIndex].GetComponent<CharacterScript>().SelectHero();
 			return true;
 		}
 
@@ -100,87 +222,88 @@ public class MapScript : MonoBehaviour {
 		}
 		else
 		{
-            characters[currentSettingIndex].transform.localPosition = new Vector3(mapCharacterIndexes[currentSettingIndex].x * 3, 0,
-																			 mapCharacterIndexes[currentSettingIndex].y * 3);
+            characters[currentSettingIndex].transform.localPosition = new Vector3(mapCharacterIndexes[currentSettingIndex].posX * 3, 0,
+																			 mapCharacterIndexes[currentSettingIndex].posY * 3);
 		}
 
 		currentSettingIndex = idx;
-		characters[currentSettingIndex].GetComponent<Animation>().Play("att01");
-		characters[currentSettingIndex].GetComponent<Animation>().PlayQueued("idle", QueueMode.CompleteOthers);
-
+        characters[currentSettingIndex].GetComponent<CharacterScript>().SelectHero();
 		return true;
 	}
 
     public void GetRandomCharacters(int[] characterTypes)
     {
-        numOfCharacter = Mathf.Min(characterTypes.Length, characters.Length);
+        for (int index = 0; index < 4; ++index)
+        {
+            Debug.Log(characterTypes[index]);
+        }
+
+        numOfCharacter = characterTypes.Length;
 		totalSettingNum = 0;
 
-        for (int i = 0; i < numOfCharacter; ++i)
+        for (int index = 0; index < numOfCharacter; ++index)
         {
-			mapCharacterIndexes[i] = null;
-			if (characters[i] != null)
+            Debug.Log("index:" + index);
+			mapCharacterIndexes[index] = null;
+            if (characters[index] != null)
 			{
-				Object.Destroy(characters[i]);
+                Object.Destroy(characters[index]);
 			}
 
-            CharacterType type = (CharacterType)(characterTypes[i] % (int)CharacterType.MAX_NUM);
+            CharacterType type = (CharacterType)(characterTypes[index] % (int)CharacterType.MAX_NUM);
+            Debug.Log("type:" + type);
             
             switch (type)
             {
                 case CharacterType.ARCHER:
-                    characters[i] = Instantiate(ArcherPrefab) as GameObject;
+                    characters[index] = Instantiate(ArcherPrefab) as GameObject;
                     break;
                 case CharacterType.SWORD_MAN:
-                    characters[i] = Instantiate(SwordPrefab) as GameObject;
+                    characters[index] = Instantiate(SwordPrefab) as GameObject;
                     break;
                 case CharacterType.MAGICIAN:
-                    characters[i] = Instantiate(MagicianPrefab) as GameObject;
+                    characters[index] = Instantiate(MagicianPrefab) as GameObject;
                     break;
                 default:
                     break;
             };
-
-			characters[i].GetComponent<CharacterSelectScript>().idx = i;
-
-            characters[i].transform.parent = transform;
-            characters[i].transform.localPosition = new Vector3(-3, 0, i * 9/4);
+            characters[index].transform.parent = transform;
+            characters[index].GetComponent<CharacterScript>().PrePositioning(index);
         }
         currentSettingIndex = -1;
     }
 
-    public void GetFixedHerosAndPosition(HeroData[] heroDatas)
+    public void GetFixedHerosAndPosition(HeroModel[] heroModels)
     {
-        numOfCharacter = Mathf.Min(heroDatas.Length, characters.Length);
+        numOfCharacter = Mathf.Min(heroModels.Length, characters.Length);
         totalSettingNum = 0;
-        for (int i = 0; i < numOfCharacter; ++i)
+        for (int index = 0; index < numOfCharacter; ++index)
         {
-            mapCharacterIndexes[i] = heroDatas[i].position;
-            if (characters[i] != null)
+            HeroModel heroData = heroModels[index];
+            mapCharacterIndexes[index] = heroData.position;
+            if (characters[index] != null)
             {
-                Object.Destroy(characters[i]);
+                Object.Destroy(characters[index]);
             }
 
-            CharacterType type = (CharacterType)((int)heroDatas[i].heroClass % (int)CharacterType.MAX_NUM);
+            CharacterType type = (CharacterType)((int)heroData.heroClass % (int)CharacterType.MAX_NUM);
 
             switch (type)
             {
                 case CharacterType.ARCHER:
-                    characters[i] = Instantiate(ArcherPrefab) as GameObject;
+                    characters[index] = Instantiate(ArcherPrefab) as GameObject;
                     break;
                 case CharacterType.SWORD_MAN:
-                    characters[i] = Instantiate(SwordPrefab) as GameObject;
+                    characters[index] = Instantiate(SwordPrefab) as GameObject;
                     break;
                 case CharacterType.MAGICIAN:
-                    characters[i] = Instantiate(MagicianPrefab) as GameObject;
+                    characters[index] = Instantiate(MagicianPrefab) as GameObject;
                     break;
                 default:
                     break;
             };
-            characters[i].GetComponent<CharacterSelectScript>().idx = i;
-            characters[i].transform.parent = gameObject.transform;
-            characters[i].transform.localPosition = new Vector3(heroDatas[i].position.x * 3, 0, heroDatas[i].position.y * 3);
-            characters[i].transform.localRotation = transform.rotation;
+            characters[index].transform.parent = gameObject.transform;
+            characters[index].GetComponent<CharacterScript>().Initialize(heroData);
         }
     }
 
@@ -191,25 +314,69 @@ public class MapScript : MonoBehaviour {
             return;
         }
 
-        characters[currentSettingIndex].transform.localPosition = new Vector3(x * 3, 0, y * 3);
 
-        if(Input.GetMouseButtonDown(0))
+    }
+
+    public void CharacterActionEnd()
+    {
+        selectState = MapSelectState.CHARACTER_SELECT;
+    }
+
+    GameObject GetTile(MapIndex index)
+    {
+        if (index.IsValid())
+            return tiles[index.posX + index.posY * 3];
+        else
+            return null;
+    }
+
+    void CharacterMove(MapIndex index)
+    {
+        Vector3 newPos = GetTile(index).transform.position;
+        characters[currentSettingIndex].GetComponent<CharacterScript>().Move(newPos, index.posX, index.posY);
+
+        if (mapCharacterIndexes[currentSettingIndex] == null)
+            totalSettingNum++;
+
+        mapCharacterIndexes[currentSettingIndex] = new MapIndex(curMouseOveredIndex);
+        currentSettingIndex = -1;
+
+        if (totalSettingNum >= numOfCharacter)
         {
-            MapIndex newIndex = new MapIndex();
-            newIndex.x = x;
-            newIndex.y = y;
+            GameObject network = GameObject.FindGameObjectWithTag("Network");
+            network.GetComponent<SocketScript>().heros = mapCharacterIndexes;
+        }
+    }
 
-			if (mapCharacterIndexes[currentSettingIndex] == null)
-				totalSettingNum++;
+    void CharacterAttack(MapIndex index)
+    {
 
-            mapCharacterIndexes[currentSettingIndex] = newIndex;
-			currentSettingIndex = -1;
+    }
 
-            if(totalSettingNum >= numOfCharacter)
+
+    ArrayList GetMovableIndexes()
+    {
+        ArrayList resultList = new ArrayList();
+        if(currentSettingIndex != -1)
+        {
+            if(mapCharacterIndexes[currentSettingIndex] == null)
             {
-                GameObject network = GameObject.FindGameObjectWithTag("Network");
-                network.GetComponent<SocketScript>().heros = mapCharacterIndexes;
+                for (int xIdx = 0; xIdx < 3; ++xIdx) 
+                    for (int yIdx = 0; yIdx < 3; ++yIdx)
+                    {
+                        resultList.Add(new MapIndex(xIdx, yIdx));
+                    }
+            }
+            else
+            {
+                MapIndex stdIndex = mapCharacterIndexes[currentSettingIndex];
+                resultList.Add(new MapIndex(stdIndex.posX + 1, stdIndex.posY));
+                resultList.Add(new MapIndex(stdIndex.posX - 1, stdIndex.posY));
+                resultList.Add(new MapIndex(stdIndex.posX, stdIndex.posY + 1));
+                resultList.Add(new MapIndex(stdIndex.posX, stdIndex.posY - 1));
+                resultList.Add(stdIndex);
             }
         }
+        return resultList;
     }
 }

@@ -8,9 +8,15 @@ public class MapManager : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         myMap = transform.GetChild(0).GetComponent<MapScript>();
-        myMap.SetPositioning(true);
+        myMap.MakeFormation();
+        int[] array = new int[4];
+        for(int i = 0 ;i < array.Length; ++i)
+        {
+            array[i] = Random.Range(0, 4);
+        }
+        myMap.GetRandomCharacters(array);
+        
         otherMap = transform.GetChild(1).GetComponent<MapScript>();
-        otherMap.SetPositioning(false);
 	}
 	
 	// Update is called once per frame
@@ -20,7 +26,7 @@ public class MapManager : MonoBehaviour {
 
     public void Ready()
     {
-        myMap.SetPositioning(false);
+        myMap.FormationEnd();
         Camera.main.GetComponent<CameraScript>().OnCameraMove();
     }
 
@@ -29,8 +35,15 @@ public class MapManager : MonoBehaviour {
         myMap.GetRandomCharacters(characterTypes);
     }
 
-    public void GetOtherCharacters(HeroData[] datas)
+    public void GetCharacters(HeroModel[] datas, bool isMine)
     {
-        otherMap.GetFixedHerosAndPosition(datas);
+        if (isMine)
+        {
+            myMap.GetFixedHerosAndPosition(datas);
+        }
+        else
+        {
+            otherMap.GetFixedHerosAndPosition(datas);
+        }
     }
 }
