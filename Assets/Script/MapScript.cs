@@ -16,6 +16,7 @@ public class MapScript : MonoBehaviour {
     Vector2 lastMouseClickedPosition = new Vector2();
     MapIndex curMouseOveredIndex = new MapIndex();
     bool isPrePositioning = false;
+    bool isMine = false;
 
     public enum CharacterType
     {
@@ -92,14 +93,9 @@ public class MapScript : MonoBehaviour {
             {
                 lastMouseClickedPosition = Input.mousePosition;
                 var character = hit.collider.gameObject;
-                int characterIndex = character.GetComponent<CharacterScript>().Index;
+                selectedHeroIdx = character.GetComponent<CharacterScript>().SelectHero();
                 SpotLight.transform.position = new Vector3(character.transform.position.x, 13.5f, character.transform.position.z);
                 SpotLight.transform.parent = character.transform;
-
-                if (ChangeSettingIndex(characterIndex))
-                {
-                    return;
-                }
             }
         }
         return;
@@ -176,8 +172,8 @@ public class MapScript : MonoBehaviour {
 
             float width = 150.0f;
             float height = 100.0f;
-            float x = lastMouseClickedPosition.x;
-            float y = lastMouseClickedPosition.y;
+            float x = 20 + width/2;
+            float y = 20 + height/2;
             GUI.Box(new Rect(x, y, width, height), msg);
 
             float buttonWidth = 100;
@@ -236,35 +232,37 @@ public class MapScript : MonoBehaviour {
         network.GetComponent<SocketScript>().RequestTurnEnd();
     }
 
-	public bool ChangeSettingIndex(int idx)
-	{
-		if (selectedHeroIdx == idx)
-			return false;
-
-		if (selectedHeroIdx == -1)
-		{
-			selectedHeroIdx = idx;
-            characters[selectedHeroIdx].GetComponent<CharacterScript>().SelectHero();
-			return true;
-		}
-
-		if (mapCharacterIndexes[selectedHeroIdx] == null)
-		{
-            characters[selectedHeroIdx].transform.localPosition = new Vector3(-3, 0, selectedHeroIdx * 9 / 4);
-		}
-		else
-		{
-            characters[selectedHeroIdx].transform.localPosition = new Vector3(mapCharacterIndexes[selectedHeroIdx].posX * 3, 0,
-																			 mapCharacterIndexes[selectedHeroIdx].posY * 3);
-		}
-
-		selectedHeroIdx = idx;
-        characters[selectedHeroIdx].GetComponent<CharacterScript>().SelectHero();
-		return true;
-	}
+// 	public bool ChangeSettingIndex(int idx)
+// 	{
+// 		if (selectedHeroIdx == idx)
+// 			return false;
+// 
+// 		if (selectedHeroIdx == -1)
+// 		{
+// 			selectedHeroIdx = idx;
+//             characters[selectedHeroIdx].GetComponent<CharacterScript>().SelectHero();
+// 			return true;
+// 		}
+// 
+// 		if (mapCharacterIndexes[selectedHeroIdx] == null)
+// 		{
+//             characters[selectedHeroIdx].transform.localPosition = new Vector3(-3, 0, selectedHeroIdx * 9 / 4);
+// 		}
+// 		else
+// 		{
+//             characters[selectedHeroIdx].transform.localPosition = new Vector3(mapCharacterIndexes[selectedHeroIdx].posX * 3, 0,
+// 																			 mapCharacterIndexes[selectedHeroIdx].posY * 3);
+// 		}
+// 
+// 		selectedHeroIdx = idx;
+//         characters[selectedHeroIdx].GetComponent<CharacterScript>().SelectHero();
+// 		return true;
+// 	}
 
     public void GetRandomCharacters(int[] characterTypes)
     {
+        isMine = true;
+
         for (int index = 0; index < 4; ++index)
         {
             Debug.Log(characterTypes[index]);
@@ -335,13 +333,17 @@ public class MapScript : MonoBehaviour {
                     break;
             };
             characters[index].transform.parent = gameObject.transform;
+            characters[index].GetComponent<CharacterScript>().Index = index;
             characters[index].GetComponent<CharacterScript>().Initialize(heroData);
         }
     }
 
     public void CharacterActionEnd()
     {
-        selectState = MapSelectState.CHARACTER_SELECT;
+        if (isMine)
+        {
+            selectState = MapSelectState.CHARACTER_SELECT;
+        }
     }
 
     GameObject GetTile(MapIndex index)

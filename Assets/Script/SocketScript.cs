@@ -196,7 +196,7 @@ public class SocketScript : MonoBehaviour
         byte[] data = Packets.ByteSerializer<Packets.TurnEnd>.GetBytes(packet);
         TcpSession.writeSocket(data);
 
-        debugMsg = "Request Move...";
+        debugMsg = "Request End Turn...";
     }
 
     void OnLoginResponse(Packets.LoginResult result)
@@ -337,6 +337,23 @@ public class SocketScript : MonoBehaviour
                 }
                 break;
 
+            case Packets.Type.MATCH_END:
+                {
+                    int packetSize = Marshal.SizeOf(typeof(Packets.MatchEnd));
+                    if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
+                        return false;
+                    }
+
+                    debugMsg = "Match Start...";
+                    Packets.MatchEnd packet = new Packets.MatchEnd();
+                    byte[] buffer = new byte[packetSize];
+                    RecvBuffer.Read(ref buffer, packetSize);
+                    
+                    Packets.ByteSerializer<Packets.MatchEnd>.ByteToObj(ref packet, buffer);
+                }
+                break;
+
             case Packets.Type.GAME_DATA:
                 {
                     int packetSize = Marshal.SizeOf(typeof(Packets.GameData));
@@ -382,7 +399,7 @@ public class SocketScript : MonoBehaviour
                         return false;
                     }
 
-                    debugMsg = "ChangeHeroState...";
+                    debugMsg = "UpdateTurn...";
                     Packets.UpdateTurn packet = new Packets.UpdateTurn();
                     byte[] buffer = new byte[packetSize];
                     RecvBuffer.Read(ref buffer, packetSize);
@@ -392,6 +409,103 @@ public class SocketScript : MonoBehaviour
                 }
                 break;
 
+            case Packets.Type.SELECT_HERO:
+                {
+                    int packetSize = Marshal.SizeOf(typeof(Packets.SelectHero));
+                    if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
+                        return false;
+                    }
+
+                    debugMsg = "SelectHero...";
+                    Packets.SelectHero packet = new Packets.SelectHero();
+                    byte[] buffer = new byte[packetSize];
+                    RecvBuffer.Read(ref buffer, packetSize);
+
+                    Packets.ByteSerializer<Packets.SelectHero>.ByteToObj(ref packet, buffer);
+                }
+                break;
+            case Packets.Type.VALID_SKILLS :
+                {
+                    int packetSize = Marshal.SizeOf(typeof(Packets.ValidSkills));
+                    if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
+                        return false;
+                    }
+
+                    debugMsg = "ValidSkills...";
+                    Packets.ValidSkills packet = new Packets.ValidSkills();
+                    byte[] buffer = new byte[packetSize];
+                    RecvBuffer.Read(ref buffer, packetSize);
+
+                    Packets.ByteSerializer<Packets.ValidSkills>.ByteToObj(ref packet, buffer);
+                }
+                break;
+            case Packets.Type.SKILL_RANGE_REQUEST:
+                {
+                    int packetSize = Marshal.SizeOf(typeof(Packets.SkillRangeRequest));
+                    if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
+                        return false;
+                    }
+
+                    debugMsg = "SkillRangeRequest...";
+                    Packets.SkillRangeRequest packet = new Packets.SkillRangeRequest();
+                    byte[] buffer = new byte[packetSize];
+                    RecvBuffer.Read(ref buffer, packetSize);
+
+                    Packets.ByteSerializer<Packets.SkillRangeRequest>.ByteToObj(ref packet, buffer);
+                }
+                break;
+            case Packets.Type.SKILL_RANGE_RESPONSE:
+                {
+                    int packetSize = Marshal.SizeOf(typeof(Packets.SkillRangeResponse));
+                    if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
+                        return false;
+                    }
+
+                    debugMsg = "SkillRangeResponse...";
+                    Packets.SkillRangeResponse packet = new Packets.SkillRangeResponse();
+                    byte[] buffer = new byte[packetSize];
+                    RecvBuffer.Read(ref buffer, packetSize);
+
+                    Packets.ByteSerializer<Packets.SkillRangeResponse>.ByteToObj(ref packet, buffer);
+                }
+                break;
+            case Packets.Type.ENEMY_SKILL_SHOT:
+                {
+                    int packetSize = Marshal.SizeOf(typeof(Packets.EnemySkillShot));
+                    if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
+                        return false;
+                    }
+
+                    debugMsg = "EnemySkillShot...";
+                    Packets.EnemySkillShot packet = new Packets.EnemySkillShot();
+                    byte[] buffer = new byte[packetSize];
+                    RecvBuffer.Read(ref buffer, packetSize);
+
+                    Packets.ByteSerializer<Packets.EnemySkillShot>.ByteToObj(ref packet, buffer);
+                }
+                break;
+            case Packets.Type.ACT_HERO:
+                {
+                    int packetSize = Marshal.SizeOf(typeof(Packets.ActHero));
+                    if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
+                        return false;
+                    }
+
+                    debugMsg = "ActHero...";
+                    Packets.ActHero packet = new Packets.ActHero();
+                    byte[] buffer = new byte[packetSize];
+                    RecvBuffer.Read(ref buffer, packetSize);
+
+                    Packets.ByteSerializer<Packets.ActHero>.ByteToObj(ref packet, buffer);
+                }
+                break;
+                
             default:
                 break;
         }
@@ -461,7 +575,6 @@ public class HeroStateModel
 
 namespace Packets
 {
-
     public enum Type
     {
         LOGIN_REQUEST = 0,
@@ -470,17 +583,19 @@ namespace Packets
         RANDOM_HERO_REQUEST = 3,
         RANDOM_HERO_RESPONSE = 4,
         MATCH_START = 5,
-        GAME_DATA = 6,
-        CHANGE_HERO_STATE = 7,
-        SELECT_HERO = 8,
-        VALID_SKILLS = 9,
-        SKILL_RANGE_REQUEST = 10,
-        SKILL_RANGE_RESPONSE = 11,
-        MOVE_HERO = 12,
-        ACT_HERO = 13,
-        TURN_END = 14,
-        UPDATE_TURN = 15,
-        TYPE_NUM = 16,
+        MATCH_END = 6,
+        GAME_DATA = 7,
+        CHANGE_HERO_STATE = 8,
+        SELECT_HERO = 9,
+        VALID_SKILLS = 10,
+        SKILL_RANGE_REQUEST = 11,
+        SKILL_RANGE_RESPONSE = 12,
+        ENEMY_SKILL_SHOT = 13,
+        MOVE_HERO = 14,
+        ACT_HERO = 15,
+        TURN_END = 16,
+        UPDATE_TURN = 17,
+        TYPE_NUM = 18,
     }
     public enum SkillType
     {
@@ -514,15 +629,13 @@ namespace Packets
         FAILED = 0,
         SUCCESS = 1,
     }
-
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class Header
     {
         [MarshalAs(UnmanagedType.U1)]
         public byte type;
-
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 1)]
-        public string buffer;
+        public string foo;
     }
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class LoginRequest : Header
@@ -548,9 +661,9 @@ namespace Packets
         [MarshalAs(UnmanagedType.U1)]
         public sbyte allocNum;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public sbyte[] x;
+        public sbyte[] x = new sbyte[4];
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public sbyte[] y;
+        public sbyte[] y = new sbyte[4];
     }
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class RandomHeroRequest : Header
@@ -560,7 +673,7 @@ namespace Packets
     public class RandomHeroResponse : Header
     {
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public byte[] heroClass;
+        public byte[] heroClass = new byte[4];
     }
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class MatchStart : Header
@@ -584,7 +697,7 @@ namespace Packets
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
         public sbyte[] skillNum = new sbyte[4];
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public sbyte[] skillIdx = new sbyte[4];
+        public byte[] skillType = new byte[4];
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
         public sbyte[] skillLevel = new sbyte[4];
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
@@ -592,7 +705,6 @@ namespace Packets
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
         public sbyte[] y = new sbyte[4];
     }
-
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class MoveHero : Header
     {
@@ -603,7 +715,6 @@ namespace Packets
         [MarshalAs(UnmanagedType.U1)]
         public sbyte y;
     }
-
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class ChangeHeroState : Header
     {
@@ -620,28 +731,24 @@ namespace Packets
         [MarshalAs(UnmanagedType.U1)]
         public sbyte y;
     }
-
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class TurnEnd : Header
     {
         [MarshalAs(UnmanagedType.U1)]
         public sbyte turn;
     }
-
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class UpdateTurn : Header
     {
         [MarshalAs(UnmanagedType.U1)]
         public sbyte nowTurn;
     }
-
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class SelectHero : Header
     {
         [MarshalAs(UnmanagedType.U1)]
         public sbyte idx;
     }
-
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class ValidSkills : Header
     {
@@ -650,7 +757,6 @@ namespace Packets
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
         public sbyte[] idx = new sbyte[6];
     }
-
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class SkillRangeRequest : Header
     {
@@ -659,7 +765,6 @@ namespace Packets
         [MarshalAs(UnmanagedType.U1)]
         public sbyte skillIdx;
     }
-
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class SkillRangeResponse : Header
     {
@@ -678,7 +783,6 @@ namespace Packets
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 9)]
         public sbyte[] effectY = new sbyte[9];
     }
-
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class ActHero : Header
     {
@@ -691,7 +795,20 @@ namespace Packets
         [MarshalAs(UnmanagedType.U1)]
         public sbyte y;
     }
-
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class EnemySkillShot : Header
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte heroIdx;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte skillIdx;
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class MatchEnd : Header
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte winner;
+    }
     public class ByteSerializer<T>
     {
         public static byte[] GetBytes(T source)

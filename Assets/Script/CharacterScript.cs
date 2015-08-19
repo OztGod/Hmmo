@@ -97,7 +97,7 @@ public class CharacterScript : MonoBehaviour
         maxAp = data.ap;
         currentAp = data.ap;
         SetPosition(data.position.posX, data.position.posY);
-        transform.localRotation = transform.parent.rotation;
+        transform.localEulerAngles = new Vector3(0.0f, 180.0f, 0.0f);
     }
 
     public void Move(Vector3 position, int x, int y)
