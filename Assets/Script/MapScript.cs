@@ -201,6 +201,7 @@ public class MapScript : MonoBehaviour {
     public void SynchronizeState(HeroStateModel model)
     {
         GameObject hero = characters[model.index];
+        mapCharacterIndexes[model.index] = model.position;
         Vector3 newPos = GetTile(model.position).transform.position;
         hero.GetComponent<CharacterScript>().Move(newPos, model.position.posX, model.position.posY);
         hero.GetComponent<CharacterScript>().UpdateState(model);
@@ -232,6 +233,10 @@ public class MapScript : MonoBehaviour {
         network.GetComponent<SocketScript>().RequestTurnEnd();
     }
 
+    public void RejectPacket()
+    {
+        selectState = MapSelectState.CHARACTER_SELECT;
+    }
 // 	public bool ChangeSettingIndex(int idx)
 // 	{
 // 		if (selectedHeroIdx == idx)

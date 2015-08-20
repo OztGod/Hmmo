@@ -277,6 +277,14 @@ public class SocketScript : MonoBehaviour
         mapManager.GetComponent<MapManager>().TurnStart(isMine);
         debugMsg = "Update turn...";
     }
+    void OnReject()
+    {
+        GameObject mapManager = GameObject.FindGameObjectWithTag("Map");
+        mapManager.GetComponent<MapManager>().RejectPacket();
+        debugMsg = "Reject...";
+
+    }
+
 
     bool PacketHandler(Packets.Type type)
     {
@@ -505,7 +513,24 @@ public class SocketScript : MonoBehaviour
                     Packets.ByteSerializer<Packets.ActHero>.ByteToObj(ref packet, buffer);
                 }
                 break;
-                
+            case Packets.Type.REJECT:
+                {
+                    int packetSize = Marshal.SizeOf(typeof(Packets.Reject));
+                    if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
+                        return false;
+                    }
+
+                    debugMsg = "ActHero...";
+                    Packets.Reject packet = new Packets.Reject();
+                    byte[] buffer = new byte[packetSize];
+                    RecvBuffer.Read(ref buffer, packetSize);
+
+                    Packets.ByteSerializer<Packets.Reject>.ByteToObj(ref packet, buffer);
+                    OnReject();
+                }
+                break;
+
             default:
                 break;
         }
@@ -595,8 +620,10 @@ namespace Packets
         ACT_HERO = 15,
         TURN_END = 16,
         UPDATE_TURN = 17,
-        TYPE_NUM = 18,
+        REJECT = 18,
+        TYPE_NUM = 19,
     }
+
     public enum SkillType
     {
         FIGHTER_ATTACK = 0,
@@ -809,6 +836,11 @@ namespace Packets
         [MarshalAs(UnmanagedType.U1)]
         public sbyte winner;
     }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class Reject : Header
+    {
+    }
+
     public class ByteSerializer<T>
     {
         public static byte[] GetBytes(T source)

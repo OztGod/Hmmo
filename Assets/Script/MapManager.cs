@@ -67,4 +67,9 @@ public class MapManager : MonoBehaviour {
             myMap.MyTurnStart();
         }
     }
+
+    public void RejectPacket()
+    {
+        myMap.RejectPacket();
+    }
 }
