@@ -5,13 +5,14 @@ public class TileScript : MonoBehaviour {
 
     public int x;
     public int y;
+    public bool isMine = false;
 
     public Material AttackMaterial;
     public Material AttackableMaterial;
     public Material MovableMaterial;
     public Material MoveMaterial;
     public Material NormalMaterial;
-
+    
 
     public enum TileState
     {
@@ -48,7 +49,6 @@ public class TileScript : MonoBehaviour {
     {
         if (state == newState)
             return;
-        Debug.Log("Tile StateChange" + newState);
 
         switch(newState)
         {

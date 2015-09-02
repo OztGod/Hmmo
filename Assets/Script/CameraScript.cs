@@ -22,7 +22,6 @@ public class CameraScript : MonoBehaviour {
     public void OnCameraMove()
     {
         StopAllCoroutines();
-        Debug.Log("camera OnMove Call");
         StartCoroutine(CameraMoveToTarget());
     }
 
@@ -40,9 +39,7 @@ public class CameraScript : MonoBehaviour {
             transform.eulerAngles += deltaAngle * (Time.deltaTime / MovingSec);
             transform.position += deltaPos * (Time.deltaTime / MovingSec);
             CameraObject.orthographicSize += deltaSize * (Time.deltaTime / MovingSec);
-            Debug.Log("camera moving");
             yield return new WaitForEndOfFrame();
         }
-        Debug.Log("camera moving end");
     }
 }

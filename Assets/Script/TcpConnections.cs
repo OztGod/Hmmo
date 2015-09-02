@@ -228,7 +228,7 @@ public class CircularBuffer
         if (expr)
             return;
         else
-            Debug.Log("");
+            Debug.Log("Assert!");
     }
 
     public bool Peek(byte[] destbuf, int bytes)

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class MapScript : MonoBehaviour {
 
@@ -7,40 +8,53 @@ public class MapScript : MonoBehaviour {
     public GameObject ArcherPrefab;
     public GameObject SwordPrefab;
     public GameObject MagicianPrefab;
-    public GameObject SpotLight;
+    public GameObject Anchor;
+    public GameObject BombEffect;
     public int selectedHeroIdx = -1;
+    public bool isMine = false;
 
+    SocketScript network = null;
+    MapManager mapManager = null;
     GameObject[] tiles = new GameObject[9];
     GameObject[] characters = new GameObject[4];
     MapIndex[] mapCharacterIndexes = new MapIndex[4];
-    Vector2 lastMouseClickedPosition = new Vector2();
+    List<MapIndex> attackableIndexes = new List<MapIndex>();
+    List<EffectRange> attackableRange = new List<EffectRange>();
     MapIndex curMouseOveredIndex = new MapIndex();
+    MapIndex targetMouseOveredIndex = new MapIndex();
+    Vector2 lastMouseClickedPosition = new Vector2();
+    
     bool isPrePositioning = false;
-    bool isMine = false;
+    bool isMyTurn = false;
+    bool isMovable = false;
+    bool isOnMyField = false;
 
     public enum CharacterType
     {
-        ARCHER,
         SWORD_MAN,
         MAGICIAN,
+        ARCHER,
         MAX_NUM,
     }
 
-    enum MapSelectState
+    public enum MapSelectState
     {
         NO_SELECT,
         CHARACTER_SELECT,
         MOVE_SELECT,
-        ATTACK_SELECT,
+        ACT_SELECT,
+        ACT_RESION_SELECT,
+        ACT_PLAYING,
     }
 
     int numOfCharacter = 0;
 	int totalSettingNum = 0;
+    int selectedSkillIdx = -1;
     MapSelectState selectState = MapSelectState.NO_SELECT;
+    PanelScript menuPanel = null;
 
 	// Use this for initialization
 	void Start () {
-
         for(int x = 0; x < 3; ++x)
         {
             for(int y = 0; y < 3; ++y)
@@ -53,9 +67,14 @@ public class MapScript : MonoBehaviour {
             }
         }
 
+        network = GameObject.FindGameObjectWithTag("Network").GetComponent<SocketScript>();
+        mapManager = GameObject.FindGameObjectWithTag("Map").GetComponent<MapManager>();
+
         lastMouseClickedPosition.x = Screen.width / 2;
         lastMouseClickedPosition.y = Screen.height / 5;
 
+        menuPanel = GameObject.FindGameObjectWithTag("UI").transform.FindChild("Menu").GetComponent<PanelScript>();
+        menuPanel.SetMyMap(this);
 	}
 	
 	// Update is called once per frame
@@ -71,19 +90,19 @@ public class MapScript : MonoBehaviour {
             case MapSelectState.MOVE_SELECT:
                 OnMoveSelect();
                 break;
-            case MapSelectState.ATTACK_SELECT:
-                OnAttackSelect();
+            case MapSelectState.ACT_SELECT:
+                OnActSelect();
+                break;
+            case MapSelectState.ACT_RESION_SELECT:
+                OnActResionSelect();
+                break;
+            case MapSelectState.ACT_PLAYING:
                 break;
         }
 	}
 
     void OnCharacterSelect()
     {
-        foreach (GameObject tile in tiles)
-        {
-            tile.GetComponent<TileScript>().ChangeTileState(TileScript.TileState.NORMAL);
-        }
-
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -91,11 +110,23 @@ public class MapScript : MonoBehaviour {
 
             if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << 10))
             {
-                lastMouseClickedPosition = Input.mousePosition;
                 var character = hit.collider.gameObject;
+                if (!character.GetComponent<CharacterScript>().isMine)
+                    return;
+
                 selectedHeroIdx = character.GetComponent<CharacterScript>().SelectHero();
-                SpotLight.transform.position = new Vector3(character.transform.position.x, 13.5f, character.transform.position.z);
-                SpotLight.transform.parent = character.transform;
+                Anchor.transform.position = new Vector3(character.transform.position.x, 13.5f, character.transform.position.z);
+                Anchor.transform.parent = character.transform;
+                menuPanel.SetActionButtons(character.GetComponent<CharacterScript>().Skills);
+
+                if (isPrePositioning)
+                {
+                    ConfirmHeroSkills(null);
+                }
+                else
+                {
+                    network.SelectHero(selectedHeroIdx);
+                }
             }
         }
         return;
@@ -103,15 +134,84 @@ public class MapScript : MonoBehaviour {
 
     void OnMoveSelect()
     {
-        foreach(MapIndex index in GetMovableIndexes())
+        if (isMovable)
         {
-            GameObject tile = GetTile(index);
+            var movableIndexes = GetMovableIndexes();
+            foreach (MapIndex index in movableIndexes)
+            {
+                GameObject tile = GetTile(index);
+                if (tile != null)
+                {
+                    var tileScript = tile.GetComponent<TileScript>();
+                    if (tileScript.GetIndex() != curMouseOveredIndex)
+                    {
+                        tileScript.ChangeTileState(TileScript.TileState.MOVABLE);
+                    }
+                }
+            }
+
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit tileHit;
+
+            if (Physics.Raycast(ray, out tileHit, Mathf.Infinity, 1 << 11))
+            {
+
+                TileScript tile = tileHit.collider.gameObject.GetComponent<TileScript>();
+                if (!tile.isMine)
+                    return;
+
+                curMouseOveredIndex.posX = tile.x;
+                curMouseOveredIndex.posY = tile.y;
+
+                bool isMovableIndex = false;
+                foreach (var index in movableIndexes)
+                {
+                    if (index.Equals(curMouseOveredIndex))
+                    {
+                        isMovableIndex = true;
+                        break;
+                    }
+                }
+
+                if (!isMovableIndex)
+                    return;
+      
+                tile.ChangeTileState(TileScript.TileState.MOVE);
+                if (Input.GetMouseButtonDown(0))
+                {
+
+                        lastMouseClickedPosition = Input.mousePosition;
+                        CharacterMoveRequest(curMouseOveredIndex);
+                        isMovable = false;
+                }
+
+            }
+        }
+        return;
+    }
+
+    void OnActSelect()
+    {
+        OnCharacterSelect();
+        return;
+    }
+
+    void OnActResionSelect()
+    {
+        if(Input.GetMouseButtonDown(1))
+        {
+            ChangeState(MapSelectState.MOVE_SELECT);
+        }
+
+        foreach (MapIndex index in attackableIndexes)
+        {
+            GameObject tile = mapManager.GetTile(isOnMyField, index);
             if (tile != null)
             {
                 var tileScript = tile.GetComponent<TileScript>();
-                if (tileScript.GetIndex() != curMouseOveredIndex)
+                if (tileScript.GetIndex() != targetMouseOveredIndex)
                 {
-                    tileScript.ChangeTileState(TileScript.TileState.MOVABLE);
+                    tileScript.ChangeTileState(TileScript.TileState.ATTACKABLE);
                 }
             }
         }
@@ -121,80 +221,126 @@ public class MapScript : MonoBehaviour {
 
         if (Physics.Raycast(ray, out tileHit, Mathf.Infinity, 1 << 11))
         {
-            curMouseOveredIndex.posX = tileHit.collider.gameObject.GetComponent<TileScript>().x;
-            curMouseOveredIndex.posY = tileHit.collider.gameObject.GetComponent<TileScript>().y;
+            TileScript tile = tileHit.collider.gameObject.GetComponent<TileScript>();
+            if (tile.isMine != isOnMyField)
+                return;
 
-            GetTile(curMouseOveredIndex).GetComponent<TileScript>().ChangeTileState(TileScript.TileState.MOVE);
+            targetMouseOveredIndex.posX = tile.x;
+            targetMouseOveredIndex.posY = tile.y;
+
+            bool isAttackableIndex = false;
+            foreach (var index in attackableIndexes)
+            {
+                if (index.Equals(targetMouseOveredIndex))
+                {
+                    isAttackableIndex = true;
+                    break;
+                }
+            }
+
+            if (!isAttackableIndex)
+            {
+                return;
+            }
+
+            foreach(var pos in GetAttackableRanges(targetMouseOveredIndex))
+            {
+                mapManager.GetTile(isOnMyField, pos).GetComponent<TileScript>().ChangeTileState(TileScript.TileState.ATTACK);
+            }
 
             if (Input.GetMouseButtonDown(0))
             {
-                lastMouseClickedPosition = Input.mousePosition;
-                CharacterMoveRequest(curMouseOveredIndex);
-                selectState = MapSelectState.NO_SELECT;
-            }
-
-        }
-        return;
-    }
-
-    void OnAttackSelect()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit tileHit;
-
-        if (Physics.Raycast(ray, out tileHit, Mathf.Infinity, 1 << 11))
-        {
-            curMouseOveredIndex.posX = tileHit.collider.gameObject.GetComponent<TileScript>().x;
-            curMouseOveredIndex.posY = tileHit.collider.gameObject.GetComponent<TileScript>().y;
-
-            GameObject curTile = GetTile(curMouseOveredIndex);
-            curTile.GetComponent<TileScript>().ChangeTileState(TileScript.TileState.ATTACK);
-
-            if(Input.GetMouseButton(0))
-            {
-                lastMouseClickedPosition = Input.mousePosition;
-                CharacterActionRequest(curMouseOveredIndex);
-                selectState = MapSelectState.NO_SELECT;
+                network.RequestSkillAction(selectedHeroIdx, targetMouseOveredIndex, selectedSkillIdx);
+                Debug.Log("Req Skill:" + "pos=" + targetMouseOveredIndex.posX + "," + targetMouseOveredIndex.posY + " skillIdx=" + selectedSkillIdx);
+                ChangeState(MapSelectState.ACT_PLAYING);
             }
         }
         return;
     }
 
-    void OnGUI()
+    void ChangeState(MapSelectState newState)
     {
-        if(selectState == MapSelectState.CHARACTER_SELECT)
+        if (newState == selectState)
+            return;
+
+        Debug.Log("State Change:" + selectState + "->" + newState);
+
+        OnStateEnd(selectState);
+        OnStateStart(newState);
+        selectState = newState;
+    }
+
+    void OnStateEnd(MapSelectState exitState)
+    {
+        switch (exitState)
         {
-            string msg = "==No Select==";
-            if(selectedHeroIdx != -1)
-            {
-                msg = characters[selectedHeroIdx].GetComponent<CharacterScript>().GetInfoString();
-            }
+            case MapSelectState.NO_SELECT:
+                return;
 
-            float width = 150.0f;
-            float height = 100.0f;
-            float x = 20 + width/2;
-            float y = 20 + height/2;
-            GUI.Box(new Rect(x, y, width, height), msg);
+            case MapSelectState.CHARACTER_SELECT:
+                return;
 
-            float buttonWidth = 100;
-            float buttonHeight = 50;
-            float buttonX = x + 25;
-            float buttonY = y + 50;
+            case MapSelectState.ACT_SELECT:
+                if (!isPrePositioning)
+                    menuPanel.CloseMenu();
+                return;
 
-            GUILayout.BeginArea(new Rect(buttonX, buttonY, buttonWidth, buttonHeight));
-            if(selectedHeroIdx != -1 && GUILayout.Button("MOVE"))
-            {
-                selectState = MapSelectState.MOVE_SELECT;
-            }
-            GUILayout.EndArea();
+            case MapSelectState.MOVE_SELECT:
+                ClearTile();
+                isMovable = false;
+                return;
 
-            GUILayout.BeginArea(new Rect(buttonX, buttonY + 55, buttonWidth, buttonHeight));
-            if (GUILayout.Button("END TURN"))
-            {
-                MyTurnEnd();
-            }
-            GUILayout.EndArea();
+            case MapSelectState.ACT_RESION_SELECT:
+                ClearAllTile();
+                return;
 
+            case MapSelectState.ACT_PLAYING:
+                return;
+
+            default:
+                return;
+        }
+    }
+
+    void OnStateStart(MapSelectState startState)
+    {
+        switch (startState)
+        {
+            case MapSelectState.NO_SELECT:
+                return;
+            
+            case MapSelectState.CHARACTER_SELECT:
+                return;
+            
+            case MapSelectState.MOVE_SELECT:
+                if (!isPrePositioning)
+                    menuPanel.OpenMenu();
+                isMovable = true;
+                return;
+            
+            case MapSelectState.ACT_SELECT:
+                if (!isPrePositioning)
+                    menuPanel.OpenMenu();
+                attackableIndexes.Clear();
+                return;
+
+            case MapSelectState.ACT_RESION_SELECT:
+                return;
+
+            case MapSelectState.ACT_PLAYING:
+                return;
+
+            default:
+                return;
+        }
+    }
+
+    public void SetIsMine(bool mine)
+    {
+        isMine = mine;
+        foreach(var tile in tiles)
+        {
+            tile.GetComponent<TileScript>().isMine = mine;
         }
     }
 
@@ -211,82 +357,60 @@ public class MapScript : MonoBehaviour {
     {
         selectedHeroIdx = -1;
         isPrePositioning = true;
-        selectState = MapSelectState.CHARACTER_SELECT;
+        ChangeState(MapSelectState.CHARACTER_SELECT);
     }
 
     public void FormationEnd()
     {
         isPrePositioning = false;
-        selectState = MapSelectState.NO_SELECT;
+        ChangeState(MapSelectState.NO_SELECT);
     }
 
     public void MyTurnStart()
     {
+        isMyTurn = true;
         selectedHeroIdx = -1;
-        selectState = MapSelectState.CHARACTER_SELECT;
+        ChangeState(MapSelectState.CHARACTER_SELECT);
     }
 
     public void MyTurnEnd()
     {
-        selectState = MapSelectState.NO_SELECT;
-        GameObject network = GameObject.FindGameObjectWithTag("Network");
-        network.GetComponent<SocketScript>().RequestTurnEnd();
+        isMyTurn = false;
+        ChangeState(MapSelectState.NO_SELECT);
+        network.RequestTurnEnd();
+        menuPanel.CloseMenu();
     }
 
     public void RejectPacket()
     {
-        selectState = MapSelectState.CHARACTER_SELECT;
+        ChangeState(MapSelectState.CHARACTER_SELECT);
     }
-// 	public bool ChangeSettingIndex(int idx)
-// 	{
-// 		if (selectedHeroIdx == idx)
-// 			return false;
-// 
-// 		if (selectedHeroIdx == -1)
-// 		{
-// 			selectedHeroIdx = idx;
-//             characters[selectedHeroIdx].GetComponent<CharacterScript>().SelectHero();
-// 			return true;
-// 		}
-// 
-// 		if (mapCharacterIndexes[selectedHeroIdx] == null)
-// 		{
-//             characters[selectedHeroIdx].transform.localPosition = new Vector3(-3, 0, selectedHeroIdx * 9 / 4);
-// 		}
-// 		else
-// 		{
-//             characters[selectedHeroIdx].transform.localPosition = new Vector3(mapCharacterIndexes[selectedHeroIdx].posX * 3, 0,
-// 																			 mapCharacterIndexes[selectedHeroIdx].posY * 3);
-// 		}
-// 
-// 		selectedHeroIdx = idx;
-//         characters[selectedHeroIdx].GetComponent<CharacterScript>().SelectHero();
-// 		return true;
-// 	}
+
+    public void ConfirmHeroSkills(List<int> validIdx)
+    {
+        if (validIdx != null)
+        {
+            menuPanel.SetActiveButtons(validIdx);
+        }
+        ChangeState(MapSelectState.MOVE_SELECT);
+    }
 
     public void GetRandomCharacters(int[] characterTypes)
     {
-        isMine = true;
-
-        for (int index = 0; index < 4; ++index)
-        {
-            Debug.Log(characterTypes[index]);
-        }
-
+        SetIsMine(true);
         numOfCharacter = characterTypes.Length;
 		totalSettingNum = 0;
 
         for (int index = 0; index < numOfCharacter; ++index)
         {
-            Debug.Log("index:" + index);
 			mapCharacterIndexes[index] = null;
             if (characters[index] != null)
 			{
+                Anchor.transform.parent = null;
                 Object.Destroy(characters[index]);
 			}
 
             CharacterType type = (CharacterType)(characterTypes[index] % (int)CharacterType.MAX_NUM);
-            Debug.Log("type:" + type);
             
             switch (type)
             {
@@ -318,6 +442,7 @@ public class MapScript : MonoBehaviour {
             mapCharacterIndexes[index] = heroData.position;
             if (characters[index] != null)
             {
+                Anchor.transform.parent = null;
                 Object.Destroy(characters[index]);
             }
 
@@ -343,20 +468,95 @@ public class MapScript : MonoBehaviour {
         }
     }
 
+    public void SetHeroSkills(int heroIdx, List<SkillModel> skillModels)
+    {
+        characters[heroIdx].GetComponent<CharacterScript>().SetSkill(skillModels);
+    }
+
     public void CharacterActionEnd()
     {
-        if (isMine)
+        if (isMyTurn)
         {
-            selectState = MapSelectState.CHARACTER_SELECT;
+            ChangeState(MapSelectState.ACT_SELECT);
+        }
+        else if(isPrePositioning)
+        {
+            ChangeState(MapSelectState.CHARACTER_SELECT);
         }
     }
 
-    GameObject GetTile(MapIndex index)
+    public void CharacterTurnOver()
+    {
+        if (isMyTurn)
+        {
+            selectedHeroIdx = -1;
+            ChangeState(MapSelectState.CHARACTER_SELECT);
+        }
+    }
+
+    public GameObject GetTile(MapIndex index)
     {
         if (index.IsValid())
             return tiles[index.posX + index.posY * 3];
         else
             return null;
+    }
+
+    public void OnSkillClicked(int skillIndex)
+    {
+        selectedSkillIdx = skillIndex;
+        network.RequestSkillRange(selectedHeroIdx, selectedSkillIdx);
+        ChangeState(MapSelectState.ACT_RESION_SELECT);
+    }
+
+    public void OnSkillRangeReponse(List<MapIndex> mapRange, List<EffectRange> effectRange, bool isMyField)
+    {
+        Debug.Log("SkillRangeRes| isMyField:" + isMyField);
+        attackableIndexes.Clear();
+        Debug.Log("SkillRangeRes| mapRange");
+        foreach(var index in mapRange)
+        {
+            Debug.Log("SkillRangeRes| isMyField:" + isMyField);
+            attackableIndexes.Add(index);
+        }
+
+        attackableRange.Clear();
+        foreach(var range in effectRange)
+        {
+            attackableRange.Add(range);
+        }
+        ChangeState(MapSelectState.ACT_RESION_SELECT);
+        isOnMyField = isMyField;
+    }
+
+    public void OnHeroSkillResponse(int heroIdx, SkillType skillType)
+    {
+        characters[heroIdx].GetComponent<CharacterScript>().SkillAction(skillType);
+    }
+
+    public void OnSkillEffect(MapIndex position, SkillType skillType)
+    {
+        Debug.Log("Res Skill Effect: " + "pos=" + position.posX + "," + position.posY + " skillIdx=" + (int)skillType);
+
+        GameObject effect = Instantiate(BombEffect) as GameObject;
+        effect.transform.parent = transform;
+        Vector3 effectPos = GetTile(position).transform.localPosition;
+        effect.transform.localPosition = new Vector3(effectPos.x, 2.0f, effectPos.z);
+    }
+
+    public void ClearTile()
+    {
+        foreach (var tile in tiles)
+        {
+            tile.GetComponent<TileScript>().ChangeTileState(TileScript.TileState.NORMAL);
+        }
+        attackableIndexes.Clear();
+        attackableRange.Clear();
+    }
+
+    void ClearAllTile()
+    {
+        mapManager.ClearAllTile();
     }
 
     void CharacterMoveRequest(MapIndex index)
@@ -374,26 +574,19 @@ public class MapScript : MonoBehaviour {
 
             if (totalSettingNum >= numOfCharacter)
             {
-                GameObject network = GameObject.FindGameObjectWithTag("Network");
-                network.GetComponent<SocketScript>().heros = mapCharacterIndexes;
+                network.heros = mapCharacterIndexes;
             }
         }
         else
         {
-            GameObject network = GameObject.FindGameObjectWithTag("Network");
-            network.GetComponent<SocketScript>().RequestMove(selectedHeroIdx, index);
+            network.RequestMove(selectedHeroIdx, index);
         }
     }
 
-    void CharacterActionRequest(MapIndex index)
-    {
-        //TODO
-    }
 
-
-    ArrayList GetMovableIndexes()
+    List<MapIndex> GetMovableIndexes()
     {
-        ArrayList resultList = new ArrayList();
+        List<MapIndex> resultList = new List<MapIndex>();
         if(selectedHeroIdx != -1)
         {
             if(mapCharacterIndexes[selectedHeroIdx] == null)
@@ -416,4 +609,68 @@ public class MapScript : MonoBehaviour {
         }
         return resultList;
     }
+
+    List<MapIndex> GetAttackableRanges(MapIndex stdIndex)
+    {
+        List<MapIndex> resultList = new List<MapIndex>();
+        //Debug.Log("[DEBUG] attackRange");
+        foreach (var range in attackableRange)
+        {
+            MapIndex newPos = new MapIndex();
+            newPos.posX = stdIndex.posX + range.relativeX;
+            newPos.posY = stdIndex.posY + range.relativeY;
+            resultList.Add(newPos);
+            //Debug.Log("(" + newPos.posX + "," + newPos.posY + ")");
+        }
+        return resultList;
+    }
+}
+
+public class MapIndex
+{
+    public MapIndex()
+    {
+        posX = 0;
+        posY = 0;
+    }
+
+    public MapIndex(int x, int y)
+    {
+        posX = x;
+        posY = y;
+    }
+
+    public MapIndex(MapIndex other)
+    {
+        posX = other.posX;
+        posY = other.posY;
+    }
+
+    private int maxX = 3;
+    private int maxY = 3;
+
+    public int posX = 1;
+    public int posY = 1;
+
+    public bool IsValid()
+    {
+        return posX >= 0 && posX < maxX && posY >= 0 && posY < maxY;
+    }
+
+    public bool Equals(MapIndex other)
+    {
+        return posX == other.posX && posY == other.posY;
+    }
+}
+
+public class EffectRange
+{
+    public EffectRange(int x, int y)
+    {
+        relativeX = x;
+        relativeY = y;
+    }
+
+    public int relativeX = 0;
+    public int relativeY = 0;
 }
