@@ -15,6 +15,7 @@ public class MapScript : MonoBehaviour {
 
     SocketScript network = null;
     MapManager mapManager = null;
+    UIManager uiManager = null;
     GameObject[] tiles = new GameObject[9];
     GameObject[] characters = new GameObject[4];
     MapIndex[] mapCharacterIndexes = new MapIndex[4];
@@ -74,6 +75,7 @@ public class MapScript : MonoBehaviour {
         lastMouseClickedPosition.y = Screen.height / 5;
 
         menuPanel = GameObject.FindGameObjectWithTag("UI").transform.FindChild("Menu").GetComponent<PanelScript>();
+        uiManager = GameObject.FindGameObjectWithTag("UI").GetComponent<UIManager>();
         menuPanel.SetMyMap(this);
 	}
 	
@@ -464,6 +466,7 @@ public class MapScript : MonoBehaviour {
             };
             characters[index].transform.parent = gameObject.transform;
             characters[index].GetComponent<CharacterScript>().Index = index;
+            characters[index].GetComponent<CharacterScript>().SetHud(uiManager.GetNewHud());
             characters[index].GetComponent<CharacterScript>().Initialize(heroData);
         }
     }

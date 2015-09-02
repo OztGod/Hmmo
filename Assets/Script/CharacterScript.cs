@@ -10,6 +10,8 @@ public class CharacterScript : MonoBehaviour
 
     Vector3 originalDirection;
     HeroClass heroClass = HeroClass.ARCHER;
+    StatusHUDScript Hud = null;
+
     List<SkillModel> skills = new List<SkillModel>();
     public List<SkillModel> Skills { get { return skills; } }
     List<StateType> states = new List<StateType>();
@@ -47,10 +49,21 @@ public class CharacterScript : MonoBehaviour
         return "[" + index + "]" + heroClass.ToString() + "(" + currentHp + "/" + currentAp + ")";
     }
 
+    public void SetHud(StatusHUDScript hud)
+    {
+        Hud = hud;
+        Hud.SetTarget(transform);
+    }
+
     public void UpdateState(HeroStateModel model)
     {
         currentHp = model.hp;
         currentAp = model.act;
+        if (Hud == null)
+            return;
+
+        Hud.SetHp(maxHp, currentHp);
+        Hud.SetAp(maxAp, currentAp);
     }
 
     public int SelectHero()
@@ -83,6 +96,12 @@ public class CharacterScript : MonoBehaviour
         currentAp = data.ap;
         SetPosition(data.position.posX, data.position.posY);
         transform.localEulerAngles = new Vector3(0.0f, 180.0f, 0.0f);
+
+        if (Hud == null)
+            return;
+
+        Hud.SetHp(maxHp, currentHp);
+        Hud.SetAp(maxAp, currentAp);
     }
 
     public void SetSkill(List<SkillModel> skillModels)
