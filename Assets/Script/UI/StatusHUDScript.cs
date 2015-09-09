@@ -3,19 +3,21 @@ using System.Collections;
 
 public class StatusHUDScript : MonoBehaviour {
     public float YGab = 0.0f;
-    public ApBarScript ApBar = null;
-    public HpBarScript HpBar = null;
     public Transform Target = null;
-
+    ApBarScript ApBar = null;
+    HpBarScript HpBar = null;
+    DmgLabelController DmgController = null;
 	// Use this for initialization
 
 	void Awake () {
         ApBar = transform.FindChild("Act_Background").GetComponent<ApBarScript>();
         HpBar = transform.FindChild("Health_Background").GetComponent<HpBarScript>();
+        DmgController = transform.FindChild("DmgLabelContainer").GetComponent<DmgLabelController>();
 	}
 	
 	// Update is called once per frame
 	void Update () {
+
         if (Target == null)
             return;
 
@@ -38,6 +40,11 @@ public class StatusHUDScript : MonoBehaviour {
     {
         Debug.Log("SetAp:" + curAp + "/" + maxAp);
         ApBar.SetAp(maxAp, curAp);
+    }
+
+    public void OnDamage(int dmg)
+    {
+        DmgController.MakeDamageLabel(dmg);
     }
 
     public void Release()
