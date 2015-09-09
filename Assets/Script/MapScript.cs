@@ -15,7 +15,7 @@ public class MapScript : MonoBehaviour {
     public GameObject Anchor;
     public GameObject DefaultEffect;
 	public GameObject FireEffect;
-	public GameObject IceEffect;
+	public GameObject HealEffect;
 	public GameObject ThunderEffect;
     public int selectedHeroIdx = -1;
     public bool isMine = false;
@@ -587,9 +587,9 @@ public class MapScript : MonoBehaviour {
 
 		switch (type)
 		{
-			//case SkillType.MAGICIAN_ICE_ARROW:
-			//	effect = Instantiate(IceEffect) as GameObject;
-			//	break;
+			case SkillType.PRIEST_HEAL:
+				effect = Instantiate(HealEffect) as GameObject;
+				break;
 			case SkillType.MAGICIAN_FIRE_BLAST:
 				effect = Instantiate(FireEffect) as GameObject;
 				break;
