@@ -21,6 +21,26 @@ public class UIManager : MonoBehaviour {
         }
 	}
 	
+    public void ReleaseHud(GameObject hudObject)
+    {
+        GameObject releaseObject = null;
+        for(int idx = 0; idx < UsingHuds.Count; ++idx)
+        {
+            if(UsingHuds[idx] == hudObject)
+            {
+                releaseObject = UsingHuds[idx];
+                UsingHuds.RemoveAt(idx);
+                break;
+            }
+        }
+
+        if (releaseObject == null)
+            return;
+
+        releaseObject.SetActive(false);
+        FreeHuds.Add(releaseObject);
+    }
+
     public StatusHUDScript GetNewHud()
     {
         if (FreeHuds.Count <= 0)

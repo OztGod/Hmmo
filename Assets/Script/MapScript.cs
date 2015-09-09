@@ -8,6 +8,10 @@ public class MapScript : MonoBehaviour {
     public GameObject ArcherPrefab;
     public GameObject SwordPrefab;
     public GameObject MagicianPrefab;
+    public GameObject ThiefPrefeb;
+    public GameObject PriestPrefeb;
+    public GameObject MonkPrefeb;
+
     public GameObject Anchor;
     public GameObject BombEffect;
     public int selectedHeroIdx = -1;
@@ -19,8 +23,7 @@ public class MapScript : MonoBehaviour {
     GameObject[] tiles = new GameObject[9];
     GameObject[] characters = new GameObject[4];
     MapIndex[] mapCharacterIndexes = new MapIndex[4];
-    List<MapIndex> attackableIndexes = new List<MapIndex>();
-    List<EffectRange> attackableRange = new List<EffectRange>();
+
     MapIndex curMouseOveredIndex = new MapIndex();
     MapIndex targetMouseOveredIndex = new MapIndex();
     Vector2 lastMouseClickedPosition = new Vector2();
@@ -28,13 +31,15 @@ public class MapScript : MonoBehaviour {
     bool isPrePositioning = false;
     bool isMyTurn = false;
     bool isMovable = false;
-    bool isOnMyField = false;
 
     public enum CharacterType
     {
         SWORD_MAN,
         MAGICIAN,
         ARCHER,
+        THIEF,
+        PRIEST,
+        MONK,
         MAX_NUM,
     }
 
@@ -50,7 +55,6 @@ public class MapScript : MonoBehaviour {
 
     int numOfCharacter = 0;
 	int totalSettingNum = 0;
-    int selectedSkillIdx = -1;
     MapSelectState selectState = MapSelectState.NO_SELECT;
     PanelScript menuPanel = null;
 
@@ -136,6 +140,11 @@ public class MapScript : MonoBehaviour {
 
     void OnMoveSelect()
     {
+        if (Input.GetMouseButtonDown(1))
+        {
+            ChangeState(MapSelectState.CHARACTER_SELECT);
+        }
+
         if (isMovable)
         {
             var movableIndexes = GetMovableIndexes();
@@ -181,10 +190,9 @@ public class MapScript : MonoBehaviour {
                 tile.ChangeTileState(TileScript.TileState.MOVE);
                 if (Input.GetMouseButtonDown(0))
                 {
-
-                        lastMouseClickedPosition = Input.mousePosition;
-                        CharacterMoveRequest(curMouseOveredIndex);
-                        isMovable = false;
+                    lastMouseClickedPosition = Input.mousePosition;
+                    CharacterMoveRequest(curMouseOveredIndex);
+                    isMovable = false;
                 }
 
             }
@@ -205,9 +213,13 @@ public class MapScript : MonoBehaviour {
             ChangeState(MapSelectState.MOVE_SELECT);
         }
 
-        foreach (MapIndex index in attackableIndexes)
+        ClearAllTile();
+
+        CharacterScript curHero = characters[selectedHeroIdx].GetComponent<CharacterScript>();
+
+        foreach (MapIndex index in curHero.GetAttackableRanges())
         {
-            GameObject tile = mapManager.GetTile(isOnMyField, index);
+            GameObject tile = mapManager.GetTile(curHero.CurrentSkillIsOnMyField(), index);
             if (tile != null)
             {
                 var tileScript = tile.GetComponent<TileScript>();
@@ -224,14 +236,14 @@ public class MapScript : MonoBehaviour {
         if (Physics.Raycast(ray, out tileHit, Mathf.Infinity, 1 << 11))
         {
             TileScript tile = tileHit.collider.gameObject.GetComponent<TileScript>();
-            if (tile.isMine != isOnMyField)
+            if (tile.isMine != curHero.CurrentSkillIsOnMyField())
                 return;
 
             targetMouseOveredIndex.posX = tile.x;
             targetMouseOveredIndex.posY = tile.y;
 
             bool isAttackableIndex = false;
-            foreach (var index in attackableIndexes)
+            foreach (var index in curHero.GetAttackableRanges())
             {
                 if (index.Equals(targetMouseOveredIndex))
                 {
@@ -245,16 +257,15 @@ public class MapScript : MonoBehaviour {
                 return;
             }
 
-            foreach(var pos in GetAttackableRanges(targetMouseOveredIndex))
+            foreach(var pos in curHero.GetAttackableEffects(targetMouseOveredIndex))
             {
-                mapManager.GetTile(isOnMyField, pos).GetComponent<TileScript>().ChangeTileState(TileScript.TileState.ATTACK);
+                mapManager.GetTile(curHero.CurrentSkillIsOnMyField(), pos).GetComponent<TileScript>().ChangeTileState(TileScript.TileState.ATTACK);
             }
 
             if (Input.GetMouseButtonDown(0))
             {
-                network.RequestSkillAction(selectedHeroIdx, targetMouseOveredIndex, selectedSkillIdx);
-                Debug.Log("Req Skill:" + "pos=" + targetMouseOveredIndex.posX + "," + targetMouseOveredIndex.posY + " skillIdx=" + selectedSkillIdx);
-                ChangeState(MapSelectState.ACT_PLAYING);
+                network.RequestSkillAction(selectedHeroIdx, targetMouseOveredIndex, curHero.CurrentSkillIdx);
+                ChangeState(MapSelectState.MOVE_SELECT);
             }
         }
         return;
@@ -288,7 +299,7 @@ public class MapScript : MonoBehaviour {
                 return;
 
             case MapSelectState.MOVE_SELECT:
-                ClearTile();
+                ClearAllTile();
                 isMovable = false;
                 return;
 
@@ -309,9 +320,15 @@ public class MapScript : MonoBehaviour {
         switch (startState)
         {
             case MapSelectState.NO_SELECT:
+                ClearAllTile();
+                if (!isPrePositioning)
+                    menuPanel.CloseMenu();
                 return;
             
             case MapSelectState.CHARACTER_SELECT:
+                ClearAllTile();
+                if (!isPrePositioning)
+                    menuPanel.CloseMenu();
                 return;
             
             case MapSelectState.MOVE_SELECT:
@@ -323,7 +340,6 @@ public class MapScript : MonoBehaviour {
             case MapSelectState.ACT_SELECT:
                 if (!isPrePositioning)
                     menuPanel.OpenMenu();
-                attackableIndexes.Clear();
                 return;
 
             case MapSelectState.ACT_RESION_SELECT:
@@ -349,9 +365,10 @@ public class MapScript : MonoBehaviour {
     public void SynchronizeState(HeroStateModel model)
     {
         GameObject hero = characters[model.index];
+        if (hero == null)
+            return;
+
         mapCharacterIndexes[model.index] = model.position;
-        Vector3 newPos = GetTile(model.position).transform.position;
-        hero.GetComponent<CharacterScript>().Move(newPos, model.position.posX, model.position.posY);
         hero.GetComponent<CharacterScript>().UpdateState(model);
     }
 
@@ -373,6 +390,7 @@ public class MapScript : MonoBehaviour {
         isMyTurn = true;
         selectedHeroIdx = -1;
         ChangeState(MapSelectState.CHARACTER_SELECT);
+        menuPanel.CloseMenu();
     }
 
     public void MyTurnEnd()
@@ -425,6 +443,15 @@ public class MapScript : MonoBehaviour {
                 case CharacterType.MAGICIAN:
                     characters[index] = Instantiate(MagicianPrefab) as GameObject;
                     break;
+                case CharacterType.THIEF:
+                    characters[index] = Instantiate(ThiefPrefeb) as GameObject;
+                    break;
+                case CharacterType.PRIEST:
+                    characters[index] = Instantiate(PriestPrefeb) as GameObject;
+                    break;
+                case CharacterType.MONK:
+                    characters[index] = Instantiate(MonkPrefeb) as GameObject;
+                    break;
                 default:
                     break;
             };
@@ -449,7 +476,6 @@ public class MapScript : MonoBehaviour {
             }
 
             CharacterType type = (CharacterType)((int)heroData.heroClass % (int)CharacterType.MAX_NUM);
-
             switch (type)
             {
                 case CharacterType.ARCHER:
@@ -461,9 +487,19 @@ public class MapScript : MonoBehaviour {
                 case CharacterType.MAGICIAN:
                     characters[index] = Instantiate(MagicianPrefab) as GameObject;
                     break;
+                case CharacterType.THIEF:
+                    characters[index] = Instantiate(ThiefPrefeb) as GameObject;
+                    break;
+                case CharacterType.PRIEST:
+                    characters[index] = Instantiate(PriestPrefeb) as GameObject;
+                    break;
+                case CharacterType.MONK:
+                    characters[index] = Instantiate(MonkPrefeb) as GameObject;
+                    break;
                 default:
                     break;
             };
+
             characters[index].transform.parent = gameObject.transform;
             characters[index].GetComponent<CharacterScript>().Index = index;
             characters[index].GetComponent<CharacterScript>().SetHud(uiManager.GetNewHud());
@@ -497,6 +533,16 @@ public class MapScript : MonoBehaviour {
         }
     }
 
+    public void OnChracterDie(int characterIdx)
+    {
+        Debug.Log("CharacterDie idx :" + characterIdx);
+        selectedHeroIdx = -1;
+        Anchor.transform.parent = null;
+        characters[characterIdx].GetComponent<CharacterScript>().Dead();
+        characters[characterIdx] = null;
+        mapCharacterIndexes[characterIdx] = null;
+    }
+
     public GameObject GetTile(MapIndex index)
     {
         if (index.IsValid())
@@ -507,29 +553,22 @@ public class MapScript : MonoBehaviour {
 
     public void OnSkillClicked(int skillIndex)
     {
-        selectedSkillIdx = skillIndex;
-        network.RequestSkillRange(selectedHeroIdx, selectedSkillIdx);
+        characters[selectedHeroIdx].GetComponent<CharacterScript>().CurrentSkillIdx = skillIndex;
+        network.RequestSkillRange(selectedHeroIdx, skillIndex);
         ChangeState(MapSelectState.ACT_RESION_SELECT);
     }
 
-    public void OnSkillRangeReponse(List<MapIndex> mapRange, List<EffectRange> effectRange, bool isMyField)
+    public void OnSkillRangeReponse(int heroIdx, int skillIdx, List<MapIndex> mapRange, bool isMyField)
     {
-        Debug.Log("SkillRangeRes| isMyField:" + isMyField);
-        attackableIndexes.Clear();
-        Debug.Log("SkillRangeRes| mapRange");
-        foreach(var index in mapRange)
-        {
-            Debug.Log("SkillRangeRes| isMyField:" + isMyField);
-            attackableIndexes.Add(index);
-        }
+        characters[heroIdx].GetComponent<CharacterScript>().SetSkillRange(skillIdx, mapRange, isMyField);
+    }
 
-        attackableRange.Clear();
-        foreach(var range in effectRange)
+    public void OnSkillEffectResponse(int heroIdx, int skillIdx, List<EffectRange> effectRanges)
+    {
+        if (characters[heroIdx].GetComponent<CharacterScript>().SetSkillEffect(skillIdx, effectRanges))
         {
-            attackableRange.Add(range);
+            ChangeState(MapSelectState.ACT_RESION_SELECT);
         }
-        ChangeState(MapSelectState.ACT_RESION_SELECT);
-        isOnMyField = isMyField;
     }
 
     public void OnHeroSkillResponse(int heroIdx, SkillType skillType)
@@ -547,14 +586,13 @@ public class MapScript : MonoBehaviour {
         effect.transform.localPosition = new Vector3(effectPos.x, 2.0f, effectPos.z);
     }
 
+
     public void ClearTile()
     {
         foreach (var tile in tiles)
         {
             tile.GetComponent<TileScript>().ChangeTileState(TileScript.TileState.NORMAL);
         }
-        attackableIndexes.Clear();
-        attackableRange.Clear();
     }
 
     void ClearAllTile()
@@ -567,7 +605,7 @@ public class MapScript : MonoBehaviour {
         if (isPrePositioning)
         {
             Vector3 newPos = GetTile(index).transform.position;
-            characters[selectedHeroIdx].GetComponent<CharacterScript>().Move(newPos, index.posX, index.posY);
+            characters[selectedHeroIdx].GetComponent<CharacterScript>().Move(index.posX, index.posY, false);
 
             if (mapCharacterIndexes[selectedHeroIdx] == null)
                 totalSettingNum++;
@@ -612,21 +650,6 @@ public class MapScript : MonoBehaviour {
         }
         return resultList;
     }
-
-    List<MapIndex> GetAttackableRanges(MapIndex stdIndex)
-    {
-        List<MapIndex> resultList = new List<MapIndex>();
-        //Debug.Log("[DEBUG] attackRange");
-        foreach (var range in attackableRange)
-        {
-            MapIndex newPos = new MapIndex();
-            newPos.posX = stdIndex.posX + range.relativeX;
-            newPos.posY = stdIndex.posY + range.relativeY;
-            resultList.Add(newPos);
-            //Debug.Log("(" + newPos.posX + "," + newPos.posY + ")");
-        }
-        return resultList;
-    }
 }
 
 public class MapIndex
@@ -654,6 +677,11 @@ public class MapIndex
 
     public int posX = 1;
     public int posY = 1;
+    
+    public override string ToString() 
+    {
+        return "(" + posX + "," + posY + ")";
+    }
 
     public bool IsValid()
     {

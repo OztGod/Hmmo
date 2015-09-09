@@ -14,11 +14,6 @@ public class CameraScript : MonoBehaviour {
         CameraObject = GetComponent<Camera>();
 	}
 	
-	// Update is called once per frame
-	void Update () {
-	
-	}
-
     public void OnCameraMove()
     {
         StopAllCoroutines();

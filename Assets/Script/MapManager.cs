@@ -102,9 +102,14 @@ public class MapManager : MonoBehaviour {
         myMap.RejectPacket();
     }
 
-    public void ResponseRange(List<MapIndex> mapRange, List<EffectRange> effectRange, bool isMyField)
+    public void ResponseRange(int heroIdx, int skillIdx, List<MapIndex> mapRange, bool isMyField)
     {
-        myMap.OnSkillRangeReponse(mapRange, effectRange, isMyField);
+        myMap.OnSkillRangeReponse(heroIdx, skillIdx, mapRange, isMyField);
+    }
+
+    public void ResponseEffect(int heroIdx, int skillIdx, List<EffectRange> effectRanges)
+    {
+        myMap.OnSkillEffectResponse(heroIdx, skillIdx, effectRanges);
     }
     
     public void ResponseSkill(SkillEffectModel model)
@@ -128,6 +133,19 @@ public class MapManager : MonoBehaviour {
             {
                 otherMap.OnSkillEffect(model.AffectedPositions[i], model.CastingSkill);
             }
+        }
+    }
+
+    public void OnChracterDead(bool isMine, int deadHeroIdx)
+    {
+        Debug.Log("OnCharacterDead:" + isMine + "/" + deadHeroIdx);
+        if (isMine)
+        {
+            myMap.OnChracterDie(deadHeroIdx);
+        }
+        else
+        {
+            otherMap.OnChracterDie(deadHeroIdx);
         }
     }
 

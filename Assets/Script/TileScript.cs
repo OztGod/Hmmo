@@ -80,7 +80,7 @@ public class TileScript : MonoBehaviour {
                 break;
 
             case TileState.ATTACK:
-                if (state == TileState.ATTACKABLE)
+                if (state == TileState.ATTACKABLE || state == TileState.NORMAL)
                 {
                     cover.GetComponent<Renderer>().material = AttackMaterial;
                     state = newState;

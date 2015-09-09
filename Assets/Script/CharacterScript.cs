@@ -11,7 +11,10 @@ public class CharacterScript : MonoBehaviour
     Vector3 originalDirection;
     HeroClass heroClass = HeroClass.ARCHER;
     StatusHUDScript Hud = null;
-
+    bool isDead = false;
+    
+    int currentSkillIdx = -1;
+    public int CurrentSkillIdx { get { return currentSkillIdx; } set { currentSkillIdx = value; } }
     List<SkillModel> skills = new List<SkillModel>();
     public List<SkillModel> Skills { get { return skills; } }
     List<StateType> states = new List<StateType>();
@@ -19,9 +22,9 @@ public class CharacterScript : MonoBehaviour
 
     int index = -1;
     public int Index { get { return index; } set { index = value; } }
-    int posX = 0;
+    int posX = -1;
     public int PosX { get { return posX; } }
-    int posY = 0;
+    int posY = -1;
     public int PosY { get { return posY; } }
     int maxHp = 0;
     public int MaxHP { get { return maxHp; } }
@@ -32,7 +35,6 @@ public class CharacterScript : MonoBehaviour
     int currentAp = 0;
     public int CurrentAp { get { return currentAp; } }
 
-
 	// Use this for initialization
 	void Start () 
 	{
@@ -40,10 +42,6 @@ public class CharacterScript : MonoBehaviour
         isMine = transform.parent.GetComponent<MapScript>().isMine;
 	}
 
-    void Update()
-    {
-    }
-    
     public string GetInfoString()
     {
         return "[" + index + "]" + heroClass.ToString() + "(" + currentHp + "/" + currentAp + ")";
@@ -57,6 +55,8 @@ public class CharacterScript : MonoBehaviour
 
     public void UpdateState(HeroStateModel model)
     {
+        Move(model.position.posX, model.position.posY, model.isForcedMove);
+
         currentHp = model.hp;
         currentAp = model.act;
         if (Hud == null)
@@ -68,7 +68,7 @@ public class CharacterScript : MonoBehaviour
 
     public int SelectHero()
     {
-        GetComponent<Animation>().Play("att01");
+        GetComponent<Animation>().Play("att02");
         GetComponent<Animation>().PlayQueued("idle", QueueMode.CompleteOthers);
         return index;
     }
@@ -113,16 +113,91 @@ public class CharacterScript : MonoBehaviour
         }
     }
 
-    public void Move(Vector3 position, int x, int y)
+    public void SetSkillRange(int skillIdx, List<MapIndex> positions, bool isOnMyField)
     {
+        SkillModel skill = skills[skillIdx];
+        skill.attackableRanges.Clear();
+        skill.attackableEffects.Clear();
+
+        skill.isOnMyField = isOnMyField;
+        skill.attackableRanges = positions;
+    }
+
+    public bool SetSkillEffect(int skillIdx, List<EffectRange> effects)
+    {
+        SkillModel skill = skills[skillIdx];
+        skill.attackableEffects.Add(effects);
+        bool result = (skill.attackableEffects.Count == skill.attackableRanges.Count);
+        return result;
+    }
+
+    public List<MapIndex> GetAttackableRanges()
+    {
+        return skills[currentSkillIdx].attackableRanges;
+    }
+
+    public List<MapIndex> GetAttackableEffects(MapIndex stdIndex)
+    {
+        List<MapIndex> resultList = new List<MapIndex>();
+        SkillModel curSkill = skills[currentSkillIdx];
+        int rangeIdx = -1;
+        var ranges = curSkill.attackableRanges;
+        Debug.Log("[DEBUG] GetAttackableEffects with" + stdIndex + " currentSkillIdx:" + currentSkillIdx);
+        for (int i = 0; i < ranges.Count; ++i)
+        {
+            Debug.Log("current attackableRange" + ranges[i]);
+            if (stdIndex.Equals(ranges[i]))
+            {
+                rangeIdx = i;
+                break;
+            }
+        }
+
+
+        foreach (var range in curSkill.attackableEffects[rangeIdx])
+        {
+            MapIndex newPos = new MapIndex();
+            newPos.posX = stdIndex.posX + range.relativeX;
+            newPos.posY = stdIndex.posY + range.relativeY;
+            Debug.Log("Attackable Pos:" + newPos);
+            resultList.Add(newPos);
+        }
+        return resultList;
+    }
+
+    public void Move(int x, int y, bool isForcedMove)
+    {
+        if(isForcedMove)
+        {
+            Debug.Log("OriginPos:(" + posX + "," + posY + ")NewPos:(" + x + "," + y + ")");
+        }
+
+        if (x == posX && y == posY)
+            return;
+
         posX = x;
         posY = y;
-        GetComponent<Animation>().Play("run");
+
+        Vector3 position = transform.parent.TransformPoint(new Vector3(posX * 3, FixedVerticalPos, posY * 3));
+        double time = 0.0;
         double distance = (transform.position - position).magnitude;
+
+        if (isForcedMove)
+        {
+            time = distance / (Speed * 3);
+            Debug.Log("Forced Move === Time:" + time);
+            GetComponent<Animation>().Play("jump");
+        }
+        else
+        {
+            time = distance / Speed;
+            GetComponent<Animation>().Play("run");
+        }
+        
         Hashtable hash = new Hashtable();
         hash.Add("x", position.x);
         hash.Add("z", position.z);
-        hash.Add("time", distance / Speed);
+        hash.Add("time", time);
         hash.Add("orienttopath", true);
         hash.Add("oncomplete", "OnActionComplete");
         hash.Add("easetype", iTween.EaseType.linear);
@@ -132,26 +207,45 @@ public class CharacterScript : MonoBehaviour
     public void SkillAction(SkillType skill)
     {
         GetComponent<Animation>().Play("att01");
-        WaitForAnimation();
+    }
+
+    public void Dead()
+    {
+        isDead = true;
+        GetComponent<Animation>().Play("die");
+        Hud.Release();
+        Hashtable hash = new Hashtable();
+    }
+
+    public bool CurrentSkillIsOnMyField()
+    {
+        return skills[currentSkillIdx].isOnMyField;
+    }
+
+    void OnDeadEnd()
+    {
+        Hashtable hash = new Hashtable();
+        hash.Add("y", transform.position.y - 3);
+        hash.Add("time", 1.5);
+        hash.Add("oncomplete", "OnDeadEndComplete");
+        hash.Add("easetype", iTween.EaseType.linear);
+        iTween.MoveTo(gameObject, hash);
+    }
+
+    void OnDeadEndComplete()
+    {
+        Debug.Log("Dead Complete!");
+        GameObject.Destroy(gameObject);
     }
 
     void OnActionComplete()
     {
+        Debug.Log("Action Complete!");
         GetComponent<Animation>().Play("idle");
         transform.eulerAngles = originalDirection;
         transform.parent.GetComponent<MapScript>().CharacterActionEnd();
     }
 
-    IEnumerator WaitForAnimation()
-    {
-        yield return null;
-        Animation animation = GetComponent<Animation>();
-        while (animation.isPlaying)
-        {
-            yield return null;
-        };
-        OnActionComplete();
-    }
 }
 
 public class HeroModel
@@ -164,6 +258,7 @@ public class HeroModel
 
 public class HeroStateModel
 {
+    public bool isForcedMove = false;
     public int index;
     public int hp;
     public int act;
@@ -174,8 +269,10 @@ public class SkillModel
 {
     public SkillType type;
     public int level;
+    public List<MapIndex> attackableRanges = new List<MapIndex>();
+    public List<List<EffectRange>> attackableEffects = new List<List<EffectRange>>();
+    public bool isOnMyField;
 }
-
 
 public enum HeroClass
 {
@@ -189,16 +286,14 @@ public enum HeroClass
 }
 public enum StateType
 {
-    STATE_MOVE_IMMUNE = 0,
-    STATE_IRON = 1,
-    STATE_POSION = 2,
-    STATE_ICE = 3,
-    STATE_BURN = 4,
-    STATE_POLYMOPH = 5,
-    STATE_BUFF = 6,
-    STATE_TAUNT = 7,
-    STATE_SACRIFICE = 8,
-    STATE_PRAY = 9,
+    STATE_IRON = 0,
+    STATE_POISON = 1,
+    STATE_ICE = 2,
+    STATE_BURN = 3,
+    STATE_BUFF = 4,
+    STATE_TAUNT = 5,
+    STATE_SACRIFICE = 6,
+    STATE_PRAY = 7,
 }
 public enum SkillType
 {

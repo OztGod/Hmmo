@@ -20,7 +20,6 @@ public class StatusHUDScript : MonoBehaviour {
             return;
 
         var wantedPos = Camera.main.WorldToScreenPoint(Target.position);
-
         transform.localPosition = new Vector3(wantedPos.x - Screen.width / 2, wantedPos.y + YGab - Screen.height / 2, 0);
 	}
 
@@ -31,11 +30,21 @@ public class StatusHUDScript : MonoBehaviour {
 
     public void SetHp(int maxHp, int curHp)
     {
+        Debug.Log("SetHp:" + curHp + "/" + maxHp);
         HpBar.SetHp(maxHp, curHp);
     }
 
     public void SetAp(int maxAp, int curAp)
     {
+        Debug.Log("SetAp:" + curAp + "/" + maxAp);
         ApBar.SetAp(maxAp, curAp);
+    }
+
+    public void Release()
+    {
+        ApBar.SetAp(0, 0);
+        HpBar.SetHp(0, 0);
+        Target = null;
+        GameObject.FindGameObjectWithTag("UI").GetComponent<UIManager>().ReleaseHud(gameObject);
     }
 }

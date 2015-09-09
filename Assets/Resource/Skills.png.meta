@@ -1,0 +1,902 @@
+fileFormatVersion: 2
+guid: 1ce81c7476b31c940939dfc4dadea377
+timeCreated: 1441814538
+licenseType: Pro
+TextureImporter:
+  fileIDToRecycleName:
+    21300000: Skills_0
+    21300002: Skills_1
+    21300004: Skills_2
+    21300006: Skills_3
+    21300008: Skills_4
+    21300010: Skills_5
+    21300012: Skills_6
+    21300014: Skills_7
+    21300016: Skills_8
+    21300018: Skills_9
+    21300020: Skills_10
+    21300022: Skills_11
+    21300024: Skills_12
+    21300026: Skills_13
+    21300028: Skills_14
+    21300030: Skills_15
+    21300032: Skills_16
+    21300034: Skills_17
+    21300036: Skills_18
+    21300038: Skills_19
+    21300040: Skills_20
+    21300042: Skills_21
+    21300044: Skills_22
+    21300046: Skills_23
+    21300048: Skills_24
+    21300050: Skills_25
+    21300052: Skills_26
+    21300054: Skills_27
+    21300056: Skills_28
+    21300058: Skills_29
+    21300060: Skills_30
+    21300062: Skills_31
+    21300064: Skills_32
+    21300066: Skills_33
+    21300068: Skills_34
+    21300070: Skills_35
+    21300072: Skills_36
+    21300074: Skills_37
+    21300076: Skills_38
+    21300078: Skills_39
+    21300080: Skills_40
+    21300082: Skills_41
+    21300084: Skills_42
+    21300086: Skills_43
+    21300088: Skills_44
+    21300090: Skills_45
+    21300092: Skills_46
+    21300094: Skills_47
+    21300096: Skills_48
+    21300098: Skills_49
+    21300100: Skills_50
+    21300102: Skills_51
+    21300104: Skills_52
+    21300106: Skills_53
+    21300108: Skills_54
+    21300110: Skills_55
+    21300112: Skills_56
+    21300114: Skills_57
+    21300116: Skills_58
+    21300118: Skills_59
+    21300120: Skills_60
+    21300122: Skills_61
+    21300124: Skills_62
+    21300126: Skills_63
+    21300128: Skills_64
+    21300130: Skills_65
+    21300132: Skills_66
+    21300134: Skills_67
+    21300136: Skills_68
+    21300138: Skills_69
+    21300140: Skills_70
+    21300142: Skills_71
+    21300144: Skills_72
+    21300146: Skills_73
+    21300148: Skills_74
+    21300150: Skills_75
+    21300152: Skills_76
+  serializedVersion: 2
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    linearTexture: 0
+    correctGamma: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: .25
+    normalMapFilter: 0
+  isReadable: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 0
+  cubemapConvolution: 0
+  cubemapConvolutionSteps: 8
+  cubemapConvolutionExponent: 1.5
+  seamlessCubemap: 0
+  textureFormat: -1
+  maxTextureSize: 2048
+  textureSettings:
+    filterMode: -1
+    aniso: 16
+    mipBias: -1
+    wrapMode: 1
+  nPOTScale: 0
+  lightmap: 0
+  rGBM: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: .5, y: .5}
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spritePixelsToUnits: 100
+  alphaIsTransparency: 1
+  textureType: 8
+  buildTargetSettings: []
+  spriteSheet:
+    sprites:
+    - name: Skills_0
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 415
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_1
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 415
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_2
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 415
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_3
+      rect:
+        serializedVersion: 2
+        x: 245
+        y: 415
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_4
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 415
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_5
+      rect:
+        serializedVersion: 2
+        x: 351
+        y: 415
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_6
+      rect:
+        serializedVersion: 2
+        x: 404
+        y: 415
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_7
+      rect:
+        serializedVersion: 2
+        x: 457
+        y: 415
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_8
+      rect:
+        serializedVersion: 2
+        x: 510
+        y: 415
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_9
+      rect:
+        serializedVersion: 2
+        x: 563
+        y: 415
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_10
+      rect:
+        serializedVersion: 2
+        x: 616
+        y: 415
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_11
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 362
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_12
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 362
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_13
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 362
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_14
+      rect:
+        serializedVersion: 2
+        x: 245
+        y: 362
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_15
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 362
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_16
+      rect:
+        serializedVersion: 2
+        x: 351
+        y: 362
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_17
+      rect:
+        serializedVersion: 2
+        x: 404
+        y: 362
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_18
+      rect:
+        serializedVersion: 2
+        x: 456
+        y: 362
+        width: 49
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_19
+      rect:
+        serializedVersion: 2
+        x: 510
+        y: 362
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_20
+      rect:
+        serializedVersion: 2
+        x: 563
+        y: 362
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_21
+      rect:
+        serializedVersion: 2
+        x: 616
+        y: 362
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_22
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 309
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_23
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 309
+        width: 48
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_24
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 309
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_25
+      rect:
+        serializedVersion: 2
+        x: 245
+        y: 309
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_26
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 309
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_27
+      rect:
+        serializedVersion: 2
+        x: 351
+        y: 309
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_28
+      rect:
+        serializedVersion: 2
+        x: 404
+        y: 309
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_29
+      rect:
+        serializedVersion: 2
+        x: 457
+        y: 309
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_30
+      rect:
+        serializedVersion: 2
+        x: 510
+        y: 309
+        width: 50
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_31
+      rect:
+        serializedVersion: 2
+        x: 563
+        y: 309
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_32
+      rect:
+        serializedVersion: 2
+        x: 616
+        y: 309
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_33
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 256
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_34
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 256
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_35
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 256
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_36
+      rect:
+        serializedVersion: 2
+        x: 245
+        y: 256
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_37
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 256
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_38
+      rect:
+        serializedVersion: 2
+        x: 351
+        y: 256
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_39
+      rect:
+        serializedVersion: 2
+        x: 404
+        y: 256
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_40
+      rect:
+        serializedVersion: 2
+        x: 457
+        y: 256
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_41
+      rect:
+        serializedVersion: 2
+        x: 510
+        y: 256
+        width: 50
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_42
+      rect:
+        serializedVersion: 2
+        x: 563
+        y: 256
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_43
+      rect:
+        serializedVersion: 2
+        x: 616
+        y: 256
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_44
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 203
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_45
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 203
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_46
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 203
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_47
+      rect:
+        serializedVersion: 2
+        x: 245
+        y: 203
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_48
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 203
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_49
+      rect:
+        serializedVersion: 2
+        x: 351
+        y: 203
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_50
+      rect:
+        serializedVersion: 2
+        x: 404
+        y: 203
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_51
+      rect:
+        serializedVersion: 2
+        x: 457
+        y: 203
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_52
+      rect:
+        serializedVersion: 2
+        x: 510
+        y: 203
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_53
+      rect:
+        serializedVersion: 2
+        x: 563
+        y: 203
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_54
+      rect:
+        serializedVersion: 2
+        x: 616
+        y: 203
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_55
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 150
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_56
+      rect:
+        serializedVersion: 2
+        x: 137
+        y: 150
+        width: 50
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_57
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 150
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_58
+      rect:
+        serializedVersion: 2
+        x: 245
+        y: 150
+        width: 48
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_59
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 150
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_60
+      rect:
+        serializedVersion: 2
+        x: 351
+        y: 150
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_61
+      rect:
+        serializedVersion: 2
+        x: 404
+        y: 150
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_62
+      rect:
+        serializedVersion: 2
+        x: 457
+        y: 150
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_63
+      rect:
+        serializedVersion: 2
+        x: 510
+        y: 150
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_64
+      rect:
+        serializedVersion: 2
+        x: 563
+        y: 150
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_65
+      rect:
+        serializedVersion: 2
+        x: 616
+        y: 150
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_66
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 97
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_67
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 97
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_68
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 97
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_69
+      rect:
+        serializedVersion: 2
+        x: 245
+        y: 97
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_70
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 97
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_71
+      rect:
+        serializedVersion: 2
+        x: 351
+        y: 97
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_72
+      rect:
+        serializedVersion: 2
+        x: 404
+        y: 97
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_73
+      rect:
+        serializedVersion: 2
+        x: 457
+        y: 97
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_74
+      rect:
+        serializedVersion: 2
+        x: 510
+        y: 97
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_75
+      rect:
+        serializedVersion: 2
+        x: 563
+        y: 97
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: Skills_76
+      rect:
+        serializedVersion: 2
+        x: 616
+        y: 97
+        width: 48
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+  spritePackingTag: 
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
