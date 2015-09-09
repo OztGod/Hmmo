@@ -4,8 +4,8 @@ using System.Collections.Generic;
 
 public class MapManager : MonoBehaviour {
     public GameObject turnButton;
-    MapScript myMap = null;
-    MapScript otherMap = null;
+    public MapScript myMap = null;
+    public MapScript otherMap = null;
 
     bool isStart = false;
 	// Use this for initialization
@@ -127,11 +127,11 @@ public class MapManager : MonoBehaviour {
         {
             if(model.IsMyField[i])
             {
-                myMap.OnSkillEffect(model.AffectedPositions[i], model.CastingSkill);
+                myMap.OnSkillEffect(model.AffectedPositions[i], model.SubjectHeroIdx, model.CastingSkill);
             }
             else
             {
-                otherMap.OnSkillEffect(model.AffectedPositions[i], model.CastingSkill);
+                otherMap.OnSkillEffect(model.AffectedPositions[i], model.SubjectHeroIdx, model.CastingSkill);
             }
         }
     }
@@ -172,7 +172,7 @@ public class SkillEffectModel
 {
     public bool IsMyTurn = true;
     public int SubjectHeroIdx = 0;
-    public SkillType CastingSkill = new SkillType();
+    public int CastingSkill = 0;
     public int AffectedPosNum = 0;
     public List<bool> IsMyField = new List<bool>();
     public List<MapIndex> AffectedPositions = new List<MapIndex>();
