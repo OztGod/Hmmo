@@ -56,12 +56,18 @@ public class CharacterScript : MonoBehaviour
     public void UpdateState(HeroStateModel model)
     {
         Move(model.position.posX, model.position.posY, model.isForcedMove);
-
-        currentHp = model.hp;
-        currentAp = model.act;
         if (Hud == null)
             return;
 
+        int dmg = model.hp - currentHp;
+
+        currentHp = model.hp;
+        currentAp = model.act;
+
+        if(dmg != 0)
+        {
+            Hud.OnDamage(dmg);
+        }
         Hud.SetHp(maxHp, currentHp);
         Hud.SetAp(maxAp, currentAp);
     }
