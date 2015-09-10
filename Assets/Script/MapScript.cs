@@ -13,7 +13,10 @@ public class MapScript : MonoBehaviour {
     public GameObject MonkPrefeb;
 
     public GameObject Anchor;
-    public GameObject BombEffect;
+    public GameObject DefaultEffect;
+	public GameObject FireEffect;
+	public GameObject HealEffect;
+	public GameObject ThunderEffect;
     public int selectedHeroIdx = -1;
     public bool isMine = false;
 
@@ -571,16 +574,33 @@ public class MapScript : MonoBehaviour {
         }
     }
 
-    public void OnHeroSkillResponse(int heroIdx, SkillType skillType)
+    public void OnHeroSkillResponse(int heroIdx, int skillIdx)
     {
-        characters[heroIdx].GetComponent<CharacterScript>().SkillAction(skillType);
+		SkillType type = mapManager.myMap.characters[heroIdx].GetComponent<CharacterScript>().GetSkillType(skillIdx);
+		characters[heroIdx].GetComponent<CharacterScript>().SkillAction(type);
     }
 
-    public void OnSkillEffect(MapIndex position, SkillType skillType)
+	public void OnSkillEffect(MapIndex position, int heroIdx, int skillIdx)
     {
-        Debug.Log("Res Skill Effect: " + "pos=" + position.posX + "," + position.posY + " skillIdx=" + (int)skillType);
+        GameObject effect;
+		SkillType type = mapManager.myMap.characters[heroIdx].GetComponent<CharacterScript>().GetSkillType(skillIdx);
 
-        GameObject effect = Instantiate(BombEffect) as GameObject;
+		switch (type)
+		{
+			case SkillType.PRIEST_HEAL:
+				effect = Instantiate(HealEffect) as GameObject;
+				break;
+			case SkillType.MAGICIAN_FIRE_BLAST:
+				effect = Instantiate(FireEffect) as GameObject;
+				break;
+			case SkillType.MAGICIAN_THUNDER_STORM:
+				effect = Instantiate(ThunderEffect) as GameObject;
+				break;
+
+			default:
+				effect = Instantiate(DefaultEffect) as GameObject;
+				break;
+		}
         effect.transform.parent = transform;
         Vector3 effectPos = GetTile(position).transform.localPosition;
         effect.transform.localPosition = new Vector3(effectPos.x, 2.0f, effectPos.z);

@@ -367,7 +367,7 @@ public class SocketScript : MonoBehaviour
         SkillEffectModel model = new SkillEffectModel();
         model.IsMyTurn = (MyTurn == (int)packet.turn);
         model.SubjectHeroIdx = packet.heroIdx;
-        model.CastingSkill = (SkillType)packet.skillIdx;
+        model.CastingSkill = packet.skillIdx;
         model.AffectedPosNum = packet.effectNum;
         for (int i = 0; i < model.AffectedPosNum; ++i)
         {

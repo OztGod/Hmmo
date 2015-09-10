@@ -117,7 +117,14 @@ public class CharacterScript : MonoBehaviour
         {
             skills.Add(skill);
         }
+		Debug.Log(index + " : skills num = " + skills.Count);
     }
+
+	public SkillType GetSkillType(int skillidx)
+	{
+		Debug.Log(index + " : skills num = " + skills.Count);
+		return skills[skillidx].type;
+	}
 
     public void SetSkillRange(int skillIdx, List<MapIndex> positions, bool isOnMyField)
     {
