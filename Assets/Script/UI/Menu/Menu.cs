@@ -38,8 +38,8 @@ public class Menu : MonoBehaviour
         }
 
         skillsCon.SetSkillUIs(targetHero.Skills);
-        barCon.SetHp(targetHero.CurrentHP, targetHero.MaxHP);
-        barCon.SetAp(targetHero.CurrentAp, targetHero.MaxAp);
+        barCon.SetHp(targetHero.MaxHP, targetHero.CurrentHP);
+        barCon.SetAp(targetHero.MaxAp, targetHero.CurrentAp);
         classCon.SetClass(targetHero.heroType, targetHero.Level);
     }
 

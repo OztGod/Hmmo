@@ -39,6 +39,8 @@ public class CharacterScript : MonoBehaviour
     public int MaxAp { get { return maxAp; } }
     int currentAp = 0;
     public int CurrentAp { get { return currentAp; } }
+
+	public AudioClip SelectSound;
     
 	// Use this for initialization
 	void Start () 
@@ -98,6 +100,7 @@ public class CharacterScript : MonoBehaviour
 
     public int SelectHero()
     {
+		AudioManager.instance.PlaySfx(SelectSound);
         GetComponent<Animation>().Play("att02");
         GetComponent<Animation>().PlayQueued("idle", QueueMode.CompleteOthers);
         return index;

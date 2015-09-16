@@ -15,6 +15,8 @@ public class SocketScript : MonoBehaviour
     public int MaxHeroNum = 4;
     public List<MapIndex> HeroPositions = new List<MapIndex>();
     public MapManager MapManager = null;
+	public AudioClip readyBGM = null;
+	public AudioClip startBGM = null;
 
     string debugMsg = "";
 
@@ -262,10 +264,13 @@ public class SocketScript : MonoBehaviour
     {
         IsMatchStart = true;
         MyTurn = result.turn;
+		AudioManager.instance.PlayBGM(readyBGM);
     }
 
     void OnGameData(Packets.GameData packet)
-    {
+	{
+		AudioManager.instance.PlayBGM(startBGM);
+
         HeroModel[] heroDatas = new HeroModel[4];
         for (int i = 0; i < 4; ++i)
         {
