@@ -143,12 +143,6 @@ public class MapScript : MonoBehaviour {
         return;
     }
 
-    void OnActSelect()
-    {
-        OnCharacterSelect();
-        return;
-    }
-
     void OnActResionSelect()
     {
         if(Input.GetMouseButtonDown(1))
@@ -289,13 +283,22 @@ public class MapScript : MonoBehaviour {
         }
     }
 
-    public void SynchronizeState(HeroStateModel model)
+    public void UpdateHero(HeroStateModel model)
     {
-        GameObject hero = characters[model.index];
+        var hero = GetCharacter(model.index);
         if (hero == null)
             return;
 
-        hero.GetComponent<CharacterScript>().UpdateState(model);
+        hero.UpdateState(model);
+    }
+
+    public void UpdateStatus(StateModel model)
+    {
+        var hero = GetCharacter(model.heroIdx);
+        if (hero == null)
+            return;
+
+        hero.UpdateStatus(model);
     }
 
     public void MakeFormation()
@@ -483,6 +486,9 @@ public class MapScript : MonoBehaviour {
 
     public CharacterScript GetCharacter(int heroIdx)
     {
+        if (characters[heroIdx] == null)
+            return null;
+
         return characters[heroIdx].GetComponent<CharacterScript>();
     }
 

@@ -64,10 +64,12 @@ public class CharacterScript : MonoBehaviour
         if (Hud == null)
             return;
 
-        int dmg = model.hp - currentHp;
+        int dmg = model.curHp - currentHp;
 
-        currentHp = model.hp;
-        currentAp = model.act;
+        currentHp = model.curHp;
+        currentAp = model.curAp;
+        maxHp = model.maxHp;
+        maxAp = model.maxAp;
 
 //         foreach(var skill in skills)
 //         {
@@ -80,6 +82,18 @@ public class CharacterScript : MonoBehaviour
         }
         Hud.SetHp(maxHp, currentHp);
         Hud.SetAp(maxAp, currentAp);
+    }
+
+    public void UpdateStatus(StateModel model)
+    {
+        if (model.isRemove)
+        {
+            Hud.RemoveStatus(model.id);
+        }
+        else
+        {
+            Hud.UpdateStatus(model.id, model.type, model.duration);
+        }
     }
 
     public int SelectHero()
@@ -249,10 +263,7 @@ public class CharacterScript : MonoBehaviour
         return skills[currentSkillIdx].isOnMyField;
     }
 
-    public void OnStatusUpdate(StateModel model)
-    {
 
-    }
 
     void OnDeadEnd()
     {
@@ -289,9 +300,11 @@ public class HeroModel
 public class HeroStateModel
 {
     public bool isForcedMove = false;
-    public int index;
-    public int hp;
-    public int act;
+    public int index = 0;
+    public int maxHp = 0;
+    public int curHp = 0;
+    public int maxAp = 0;
+    public int curAp = 0;
     public MapIndex position = new MapIndex();
 }
 
@@ -311,10 +324,10 @@ public class SkillModel
 public class StateModel
 {
     public StateType type = StateType.NUM;
-    int heroIdx = 0;
-    int id = 0;
-    int duration = 0;
-    bool isRemove = false;
+    public int heroIdx = 0;
+    public int id = 0;
+    public int duration = 0;
+    public bool isRemove = false;
 }
 
 public enum HeroClass
