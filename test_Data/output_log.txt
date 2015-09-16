@@ -18,7 +18,7 @@ Platform assembly: C:\Hmmo\test_Data\Managed\UnityEngine.Networking.dll (this me
 Loading C:\Hmmo\test_Data\Managed\UnityEngine.Networking.dll into Unity Child Domain
 Platform assembly: C:\Hmmo\test_Data\Managed\UnityEngine.Analytics.dll (this message is harmless)
 Loading C:\Hmmo\test_Data\Managed\UnityEngine.Analytics.dll into Unity Child Domain
-- Completed reload, in  0.096 seconds
+- Completed reload, in  0.358 seconds
 desktop: 1920x1200 59Hz; virtual: 3200x1200 at -1280,0
 <RI> Initializing input.
 <RI> Input initialized.
@@ -26,15 +26,21 @@ desktop: 1920x1200 59Hz; virtual: 3200x1200 at -1280,0
 Platform assembly: C:\Hmmo\test_Data\Managed\System.Core.dll (this message is harmless)
 Platform assembly: C:\Hmmo\test_Data\Managed\System.dll (this message is harmless)
 Setting up 1 worker threads for Enlighten.
-  Thread -> id: 1e50 -> priority: 1 
-Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 0.518088 ms
+  Thread -> id: a00 -> priority: 1 
+The referenced script on this Behaviour is missing!
+ 
+(Filename:  Line: 1715)
 
-Unloading 8 unused Assets to reduce memory usage. Loaded Objects now: 2787.
-Total: 1.365833 ms (FindLiveObjects: 0.152306 ms CreateObjectMapping: 0.063221 ms MarkObjects: 1.002925 ms  DeleteObjects: 0.146559 ms)
+Unloading 2 Unused Serialized files (Serialized files now loaded: 0)
+Shader 'Hidden/TerrainEngine/Splatmap/Specular-Base': fallback shader 'Legacy Shaders/Specular' not found
+Shader 'Hidden/TerrainEngine/Splatmap/Specular-Base': fallback shader 'Legacy Shaders/Specular' not found
+UnloadTime: 0.520962 ms
+
+Unloading 8 unused Assets to reduce memory usage. Loaded Objects now: 2795.
+Total: 1.365833 ms (FindLiveObjects: 0.142864 ms CreateObjectMapping: 0.058705 ms MarkObjects: 1.020577 ms  DeleteObjects: 0.142043 ms)
 
 Setting up 1 worker threads for Enlighten.
-  Thread -> id: 243c -> priority: 1 
+  Thread -> id: 1534 -> priority: 1 
 State Change:NO_SELECT->CHARACTER_SELECT
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
@@ -71,7 +77,7 @@ State Change:NO_SELECT->CHARACTER_SELECT
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
 
-Select:MyMap (MapScript) priest(Clone) (CharacterScript) True
+Select:MyMap (MapScript) monk(Clone) (CharacterScript) True
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
 
@@ -107,99 +113,479 @@ State Change:CHARACTER_SELECT->NO_SELECT
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
 
-NullReferenceException: Object reference not set to an instance of an object
-  at StatusHUDScript.Awake () [0x00000] in <filename unknown>:0 
-UnityEngine.GameObject:SetActive(Boolean)
-MapManager:Ready()
-SocketScript:OnGUI()
- 
-(Filename:  Line: -1)
-
 State Change:NO_SELECT->CHARACTER_SELECT
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
 
-NullReferenceException: Object reference not set to an instance of an object
-  at Menu.Turn (Boolean isOn) [0x00000] in <filename unknown>:0 
-  at MapManager.TurnStart (Boolean isMine) [0x00000] in <filename unknown>:0 
-  at SocketScript.OnUpdateTurn (Packets.UpdateTurn packet) [0x00000] in <filename unknown>:0 
-  at SocketScript.PacketHandler (Type type) [0x00000] in <filename unknown>:0 
-  at SocketScript.SocketResponse () [0x00000] in <filename unknown>:0 
-  at SocketScript.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at Menu.ResetMenu () [0x00000] in <filename unknown>:0 
-  at Menu.Start () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
 Select:MyMap (MapScript) monk(Clone) (CharacterScript) False
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at Menu.UpdateMenu () [0x00000] in <filename unknown>:0 
-  at Menu.SetTarget (.CharacterScript target) [0x00000] in <filename unknown>:0 
-  at MapManager.CharaterSelect (.MapScript map, .CharacterScript selectedHero, Boolean isPrepositioning) [0x00000] in <filename unknown>:0 
-  at MapScript.OnCharacterSelect () [0x00000] in <filename unknown>:0 
-  at MapScript.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
 
 State Change:CHARACTER_SELECT->MOVE_SELECT
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
 
-NullReferenceException: Object reference not set to an instance of an object
-  at Menu.UpdateMenu () [0x00000] in <filename unknown>:0 
-  at MapManager.SetValidSkills (System.Collections.Generic.List`1 validSkills) [0x00000] in <filename unknown>:0 
-  at SocketScript.OnValidSkills (Packets.ValidSkills packet) [0x00000] in <filename unknown>:0 
-  at SocketScript.PacketHandler (Type type) [0x00000] in <filename unknown>:0 
-  at SocketScript.SocketResponse () [0x00000] in <filename unknown>:0 
-  at SocketScript.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
 State Change:MOVE_SELECT->NO_SELECT
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
 
-NullReferenceException: Object reference not set to an instance of an object
-  at Menu.UpdateMenu () [0x00000] in <filename unknown>:0 
-  at MapManager.UpdateHero (.HeroStateModel model, Boolean isMine) [0x00000] in <filename unknown>:0 
-  at SocketScript.OnChangeHeroState (Packets.ChangeHeroState packet) [0x00000] in <filename unknown>:0 
-  at SocketScript.PacketHandler (Type type) [0x00000] in <filename unknown>:0 
-  at SocketScript.SocketResponse () [0x00000] in <filename unknown>:0 
-  at SocketScript.Update () [0x00000] in <filename unknown>:0 
+State Change:NO_SELECT->MOVE_SELECT
  
-(Filename:  Line: -1)
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
 
 Select:MyMap (MapScript) monk(Clone) (CharacterScript) False
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
 
-NullReferenceException: Object reference not set to an instance of an object
-  at Menu.UpdateMenu () [0x00000] in <filename unknown>:0 
-  at Menu.SetTarget (.CharacterScript target) [0x00000] in <filename unknown>:0 
-  at MapManager.CharaterSelect (.MapScript map, .CharacterScript selectedHero, Boolean isPrepositioning) [0x00000] in <filename unknown>:0 
-  at MapScript.CharacterActionEnd () [0x00000] in <filename unknown>:0 
-  at CharacterScript.OnActionComplete () [0x00000] in <filename unknown>:0 
-UnityEngine.GameObject:SendMessage(String, Object, SendMessageOptions)
-iTween:CallBack(String)
-iTween:TweenComplete()
-iTween:Update()
+OnSkillRange!
  
-(Filename:  Line: -1)
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
 
-NullReferenceException: Object reference not set to an instance of an object
-  at Menu.UpdateMenu () [0x00000] in <filename unknown>:0 
-  at MapManager.UpdateHero (.HeroStateModel model, Boolean isMine) [0x00000] in <filename unknown>:0 
-  at SocketScript.OnChangeHeroState (Packets.ChangeHeroState packet) [0x00000] in <filename unknown>:0 
-  at SocketScript.PacketHandler (Type type) [0x00000] in <filename unknown>:0 
-  at SocketScript.SocketResponse () [0x00000] in <filename unknown>:0 
-  at SocketScript.Update () [0x00000] in <filename unknown>:0 
+range[0]:(0,0)
  
-(Filename:  Line: -1)
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:MOVE_SELECT->ACT_RESION_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+Select:MyMap (MapScript) monk(Clone) (CharacterScript) False
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:ACT_RESION_SELECT->MOVE_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+OnSkillRange!
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:MOVE_SELECT->ACT_RESION_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+Select:MyMap (MapScript) monk(Clone) (CharacterScript) False
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:ACT_RESION_SELECT->MOVE_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:MOVE_SELECT->NO_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:NO_SELECT->MOVE_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+Select:MyMap (MapScript) monk(Clone) (CharacterScript) False
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:MOVE_SELECT->NO_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:NO_SELECT->CHARACTER_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+Select:MyMap (MapScript) monk(Clone) (CharacterScript) False
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:CHARACTER_SELECT->MOVE_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:MOVE_SELECT->NO_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:NO_SELECT->MOVE_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+Select:MyMap (MapScript) monk(Clone) (CharacterScript) False
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+OnSkillRange!
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:MOVE_SELECT->ACT_RESION_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+Select:MyMap (MapScript) monk(Clone) (CharacterScript) False
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:ACT_RESION_SELECT->MOVE_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+OnSkillRange!
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:MOVE_SELECT->ACT_RESION_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+OnSkillRange!
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:ACT_RESION_SELECT->MOVE_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:MOVE_SELECT->NO_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:NO_SELECT->MOVE_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+Select:MyMap (MapScript) monk(Clone) (CharacterScript) False
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:MOVE_SELECT->NO_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:NO_SELECT->CHARACTER_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+Select:MyMap (MapScript) archergirl(Clone) (CharacterScript) False
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:CHARACTER_SELECT->MOVE_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+OnSkillRange!
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[0]:(0,1)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[1]:(1,1)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[2]:(2,1)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[3]:(0,2)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[4]:(1,2)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[5]:(2,2)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:MOVE_SELECT->ACT_RESION_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+Select:MyMap (MapScript) archergirl(Clone) (CharacterScript) False
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:ACT_RESION_SELECT->MOVE_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+OnSkillRange!
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[0]:(1,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[1]:(1,1)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[2]:(1,2)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[1]:(0,1)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[2]:(0,2)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,-1)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[1]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[2]:(0,1)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,-2)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[1]:(0,-1)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[2]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:MOVE_SELECT->ACT_RESION_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+OnSkillRange!
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[0]:(1,1)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[1]:(1,2)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+Select:MyMap (MapScript) archergirl(Clone) (CharacterScript) False
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:ACT_RESION_SELECT->MOVE_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+OnSkillRange!
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[0]:(1,1)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[1]:(1,2)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:MOVE_SELECT->ACT_RESION_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+Select:MyMap (MapScript) archergirl(Clone) (CharacterScript) False
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:ACT_RESION_SELECT->MOVE_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:MOVE_SELECT->NO_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:NO_SELECT->CHARACTER_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+Select:MyMap (MapScript) archergirl(Clone) (CharacterScript) False
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:CHARACTER_SELECT->MOVE_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+OnSkillRange!
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[0]:(0,1)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[1]:(1,1)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[2]:(2,1)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[3]:(0,2)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[4]:(1,2)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+range[5]:(2,2)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+effect[0]:(0,0)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:MOVE_SELECT->ACT_RESION_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+Select:MyMap (MapScript) archergirl(Clone) (CharacterScript) False
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:ACT_RESION_SELECT->MOVE_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:MOVE_SELECT->NO_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:NO_SELECT->MOVE_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+Select:MyMap (MapScript) archergirl(Clone) (CharacterScript) False
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+Select:MyMap (MapScript) archergirl(Clone) (CharacterScript) False
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
+
+State Change:MOVE_SELECT->NO_SELECT
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 65)
 

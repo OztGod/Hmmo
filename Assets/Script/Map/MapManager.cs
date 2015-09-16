@@ -7,6 +7,8 @@ public class MapManager : MonoBehaviour {
     public GameObject HighLight;
     public GameObject Menu;
 
+	public AudioClip defaultHit;
+
     MapScript myMap;
     MapScript otherMap;
     SocketScript network;

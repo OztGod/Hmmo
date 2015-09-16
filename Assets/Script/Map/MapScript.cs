@@ -456,6 +456,9 @@ public class MapScript : MonoBehaviour {
     {
         GameObject effect;
 
+		//일단 피격 사운드는 디폴트로
+		AudioManager.instance.PlaySfx(mapManager.defaultHit);
+
 		switch (type)
 		{
 			case SkillType.PRIEST_HEAL:
