@@ -253,8 +253,10 @@ public class SocketScript : MonoBehaviour
     void OnChangeHeroState(Packets.ChangeHeroState packet)
     {
         HeroStateModel model = new HeroStateModel();
-        model.act = packet.act;
-        model.hp = packet.hp;
+        model.curAp = packet.act;
+        model.maxAp = packet.maxAct;
+        model.curHp = packet.hp;
+        model.maxHp = packet.maxHp;
         model.index = packet.idx;
         model.position.posX = packet.x;
         model.position.posY = packet.y;
@@ -262,7 +264,7 @@ public class SocketScript : MonoBehaviour
 
         bool isMine = MyTurn == packet.turn;
 
-        MapManager.SynchronizeState(model, isMine);
+        MapManager.UpdateHero(model, isMine);
     }
 
     void OnRandomHeroResponse(byte[] heroRes)
@@ -341,7 +343,30 @@ public class SocketScript : MonoBehaviour
 
     void OnHeroState(Packets.HeroState packet)
     {
+        StateModel model = new StateModel();
+        
+        model.type = (StateType)packet.stateType;
+        model.heroIdx = (int)packet.targetIdx;
+        model.id = (int)packet.stateId;
+        model.duration = (int)packet.duration;
+        model.isRemove = false;
 
+        bool isMine = (MyTurn == (int)packet.targetTurn);
+        MapManager.UpdateStatus(model, isMine);
+    }
+
+    void OnRemoveState(Packets.RemoveHeroState packet)
+    {
+        StateModel model = new StateModel();
+
+        model.type = (StateType)packet.type;
+        model.heroIdx = (int)packet.targetIdx;
+        model.id = (int)packet.stateId;
+        model.duration = 0;
+        model.isRemove = true;
+
+        bool isMine = (MyTurn == (int)packet.targetTurn);
+        MapManager.UpdateStatus(model, isMine);
     }
 
     void OnReject()
@@ -673,7 +698,7 @@ public class SocketScript : MonoBehaviour
                     RecvBuffer.Read(ref buffer, packetSize);
 
                     Packets.ByteSerializer<Packets.HeroState>.ByteToObj(ref packet, buffer);
-
+                    OnHeroState(packet);
                 }
                 break;
 
@@ -691,7 +716,7 @@ public class SocketScript : MonoBehaviour
                     RecvBuffer.Read(ref buffer, packetSize);
 
                     Packets.ByteSerializer<Packets.RemoveHeroState>.ByteToObj(ref packet, buffer);
-
+                    OnRemoveState(packet);
                 }
                 break;
 
@@ -734,9 +759,10 @@ namespace Packets
         HERO_STATE = 21,
         HERO_REMOVE_STATE = 22,
         EFFECT_RESPONSE = 23,
-        TYPE_NUM = 24,
+        REGISTER_ACCOUNT_REQUEST = 24,
+        REGISTER_ACCOUNT_RESPONSE = 25,
+        TYPE_NUM = 26,
     }
-
     public enum LoginResult
     {
         FAILED = 0,
@@ -842,7 +868,11 @@ namespace Packets
         [MarshalAs(UnmanagedType.U1)]
         public sbyte idx;
         [MarshalAs(UnmanagedType.U1)]
+        public sbyte maxHp;
+        [MarshalAs(UnmanagedType.U1)]
         public sbyte hp;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte maxAct;
         [MarshalAs(UnmanagedType.U1)]
         public sbyte act;
         [MarshalAs(UnmanagedType.U1)]
@@ -1003,6 +1033,24 @@ namespace Packets
         public sbyte stateId;
         [MarshalAs(UnmanagedType.U1)]
         public byte stateType;
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class RegisterAccountRequest : Header
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte idLength;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+        public char[] id = new char[16];
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte passwordLength;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+        public char[] password = new char[16];
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class RegisterAccountResponse : Header
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte isSuccess;
     }
     #endregion
 

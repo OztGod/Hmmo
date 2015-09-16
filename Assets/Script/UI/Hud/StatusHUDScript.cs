@@ -61,14 +61,14 @@ public class StatusHUDScript : MonoBehaviour {
         GameObject.FindGameObjectWithTag("UI").GetComponent<UIManager>().ReleaseHud(gameObject);
     }
 
-    public void UpdateState(int id, StateType type, int duration)
+    public void UpdateStatus(int id, StateType type, int duration)
     {
-        StateContainer.UpdateState(id, type, duration);
+        StateContainer.UpdateStatus(id, type, duration);
     }
 
-    public void Remove(int id)
+    public void RemoveStatus(int id)
     {
-        StateContainer.RemoveState(id);
+        StateContainer.RemoveStatus(id);
     }
 
 }

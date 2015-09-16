@@ -17,6 +17,7 @@ public class StateIcon : MonoBehaviour {
 	
     public void InitState(StateType type, int duration, int stateId)
     {
+        Debug.Log("[" + type + "] Duration:" + duration);
         id = stateId;
         sprite.sprite2D = uiManager.GetStateSprite(type);
         curDuration = duration;

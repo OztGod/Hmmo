@@ -50,15 +50,28 @@ public class MapManager : MonoBehaviour {
         }
     }
 
-    public void SynchronizeState(HeroStateModel model, bool isMine)
+    public void UpdateHero(HeroStateModel model, bool isMine)
     {
         if (isMine)
         {
-            myMap.SynchronizeState(model);
+            myMap.UpdateHero(model);
         }
         else
         {
-            otherMap.SynchronizeState(model);
+            otherMap.UpdateHero(model);
+        }
+        menuPanel.UpdateMenu();
+    }
+
+    public void UpdateStatus(StateModel model, bool isMine)
+    {
+        if (isMine)
+        {
+            myMap.UpdateStatus(model);
+        }
+        else
+        {
+            otherMap.UpdateStatus(model);
         }
     }
 

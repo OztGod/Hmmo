@@ -16,7 +16,7 @@ public class StateContainer : MonoBehaviour {
         grid = gameObject.GetComponent<UIGrid>();
     }
 
-    public void UpdateState(int id, StateType type, int duration)
+    public void UpdateStatus(int id, StateType type, int duration)
     {
         var icon = GetIcon(id);
         if(icon == null)
@@ -34,7 +34,7 @@ public class StateContainer : MonoBehaviour {
 
     }
 
-    public void RemoveState(int id)
+    public void RemoveStatus(int id)
     {
         var icon = GetIcon(id);
         if (icon == null)
