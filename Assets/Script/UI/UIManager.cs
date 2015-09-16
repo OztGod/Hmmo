@@ -5,10 +5,16 @@ using System.Collections.Generic;
 public class UIManager : MonoBehaviour {
 
     public GameObject HudPrefeb = null;
+    public List<Sprite> SkillSprites = new List<Sprite>();
+    public List<Sprite> ClassSprite = new List<Sprite>();
+    public List<Sprite> StateSprite = new List<Sprite>();
+    public List<string> SkillDesc = new List<string>();
     public int InitHudNum = 10;
-    
+    public int InitIconNum = 100;
+
     List<GameObject> FreeHuds = new List<GameObject>();
     List<GameObject> UsingHuds = new List<GameObject>();
+
 
 	// Use this for initialization
 	void Start () 
@@ -19,6 +25,7 @@ public class UIManager : MonoBehaviour {
             newHud.SetActive(false);
             FreeHuds.Add(newHud);
         }
+
 	}
 	
     public void ReleaseHud(GameObject hudObject)
@@ -58,5 +65,30 @@ public class UIManager : MonoBehaviour {
         UsingHuds.Add(retHud);
         retHud.SetActive(true);
         return retHud.GetComponent<StatusHUDScript>();
+    }
+
+    public Sprite GetSkillSprite(SkillType type)
+    {
+        return SkillSprites[(int)type];
+    }
+
+    public string GetSkillDesc(SkillType type)
+    {
+        return SkillDesc[(int)type];
+    }
+
+    public Sprite GetClassSprite(HeroClass type)
+    {
+        return ClassSprite[(int)type];
+    }
+
+    public Sprite GetStateSprite(StateType type)
+    {
+        return StateSprite[(int)type];
+    }
+
+    public Menu GetMenu()
+    {
+        return transform.FindChild("Menu").GetComponent<Menu>();
     }
 }

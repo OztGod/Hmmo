@@ -1,0 +1,136 @@
+fileFormatVersion: 2
+guid: 8cc0848e8f2c26f4890342471e03ff1b
+timeCreated: 1441869851
+licenseType: Pro
+TextureImporter:
+  fileIDToRecycleName:
+    21300000: classes1_0
+    21300002: classes1_1
+    21300004: classes1_2
+    21300006: classes1_4
+    21300008: classes1_5
+    21300010: classes1_8
+    21300012: classes1_21
+    21300014: classes1_26
+    21300016: classes1_27
+    21300018: classes1_30
+    21300020: classes1_37
+  serializedVersion: 2
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    linearTexture: 0
+    correctGamma: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: .25
+    normalMapFilter: 0
+  isReadable: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 0
+  cubemapConvolution: 0
+  cubemapConvolutionSteps: 8
+  cubemapConvolutionExponent: 1.5
+  seamlessCubemap: 0
+  textureFormat: -1
+  maxTextureSize: 2048
+  textureSettings:
+    filterMode: -1
+    aniso: 16
+    mipBias: -1
+    wrapMode: 1
+  nPOTScale: 0
+  lightmap: 0
+  rGBM: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: .5, y: .5}
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spritePixelsToUnits: 100
+  alphaIsTransparency: 1
+  textureType: 8
+  buildTargetSettings: []
+  spriteSheet:
+    sprites:
+    - name: classes1_0
+      rect:
+        serializedVersion: 2
+        x: 365
+        y: 358
+        width: 4
+        height: 4
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: classes1_1
+      rect:
+        serializedVersion: 2
+        x: 11
+        y: 220
+        width: 136
+        height: 136
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: classes1_2
+      rect:
+        serializedVersion: 2
+        x: 163
+        y: 222
+        width: 136
+        height: 133
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: classes1_4
+      rect:
+        serializedVersion: 2
+        x: 315
+        y: 222
+        width: 134
+        height: 132
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: classes1_5
+      rect:
+        serializedVersion: 2
+        x: 467
+        y: 217
+        width: 134
+        height: 135
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: classes1_26
+      rect:
+        serializedVersion: 2
+        x: 156
+        y: 48
+        width: 143
+        height: 134
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: classes1_27
+      rect:
+        serializedVersion: 2
+        x: 313
+        y: 48
+        width: 132
+        height: 135
+      alignment: 0
+      pivot: {x: .5, y: .5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+  spritePackingTag: 
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
