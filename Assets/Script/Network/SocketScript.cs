@@ -28,12 +28,8 @@ public class SocketScript : MonoBehaviour
         //add a copy of TCPConnection to this game object
         TcpSession = gameObject.AddComponent<TCPConnections>();
         RecvBuffer = TcpSession.recvBuffer;
-        DontDestroyOnLoad(gameObject);
-    }
-
-    void Start()
-    {
 		TcpSession.setupSocket();
+        DontDestroyOnLoad(gameObject);
     }
 
     void Update()
@@ -99,6 +95,21 @@ public class SocketScript : MonoBehaviour
 
         debugMsg = "Attempting to login..";
     }
+
+	public void Register(string id, string psw)
+	{
+		Packets.RegisterAccountRequest packet = new Packets.RegisterAccountRequest();
+		packet.type = (byte)Packets.Type.REGISTER_ACCOUNT_REQUEST;
+		packet.idLength = (sbyte)id.Length;
+		packet.passwordLength = (sbyte)psw.Length;
+		packet.id = id.ToCharArray();
+		packet.password = psw.ToCharArray();
+
+		byte[] data = Packets.ByteSerializer<Packets.RegisterAccountRequest>.GetBytes(packet);
+		TcpSession.writeSocket(data);
+
+		debugMsg = "Attempting to register..";
+	}
 
     void RequestRandomHero()
     {
@@ -211,6 +222,23 @@ public class SocketScript : MonoBehaviour
                 break;
         }
     }
+
+	void OnRegisterAccount(Packets.RegisterAccountResponse result)
+	{
+		var title = GameObject.FindGameObjectWithTag("Scene").GetComponent<TitleScript>();
+
+		switch (result.isSuccess)
+		{
+			case 1:
+				title.registerSuccess(true);
+				debugMsg = "Register Complete!...";
+				break;
+			case 0:
+				title.registerSuccess(false);
+				debugMsg = "Register Failed!...";
+				break;
+		}
+	}
 
     void OnMatchStart(Packets.MatchStart result)
     {
@@ -719,6 +747,23 @@ public class SocketScript : MonoBehaviour
                     OnRemoveState(packet);
                 }
                 break;
+			case Packets.Type.REGISTER_ACCOUNT_RESPONSE:
+				{
+					int packetSize = Marshal.SizeOf(typeof(Packets.RegisterAccountResponse));
+					if (RecvBuffer.GetStoredSize() < packetSize)
+					{
+						return false;
+					}
+
+					debugMsg = "RemoveHeroState...";
+					Packets.RegisterAccountResponse packet = new Packets.RegisterAccountResponse();
+					byte[] buffer = new byte[packetSize];
+					RecvBuffer.Read(ref buffer, packetSize);
+
+					Packets.ByteSerializer<Packets.RegisterAccountResponse>.ByteToObj(ref packet, buffer);
+					OnRegisterAccount(packet);
+				}
+				break;
 
             default:
                 break;
