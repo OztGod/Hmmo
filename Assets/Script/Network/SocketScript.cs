@@ -18,7 +18,6 @@ public class SocketScript : MonoBehaviour
 
     string debugMsg = "";
 
-    bool IsLoginSuccess = false;
     bool IsMatchStart = false;
     int MyTurn = 0;
 
@@ -43,6 +42,25 @@ public class SocketScript : MonoBehaviour
 
 	void OnGUI()
 	{
+		if (IsMatchStart && !IsReady)
+		{
+			if (GUILayout.Button("Get Random Hero"))
+			{
+				RequestRandomHero();
+			}
+		}
+
+		if (HeroPositions.Count >= 4 && !IsReady)
+		{
+			if (GUILayout.Button("Ready"))
+			{
+				AllocHeros();
+				IsReady = true;
+				MapManager.Ready();
+				debugMsg = "Ready...";
+			}
+		}
+
 		float width = 300.0f;
 		float height = 50.0f;
 		float x = Screen.width - width;
