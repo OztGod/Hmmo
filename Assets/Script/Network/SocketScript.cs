@@ -14,10 +14,8 @@ public class SocketScript : MonoBehaviour
     public bool IsReady = false;
     public int MaxHeroNum = 4;
     public List<MapIndex> HeroPositions = new List<MapIndex>();
-    MapManager MapManager = null;
+    public MapManager MapManager = null;
 
-    string IdInput = "";
-    string PswInput = "";
     string debugMsg = "";
 
     bool IsLoginSuccess = false;
@@ -35,74 +33,28 @@ public class SocketScript : MonoBehaviour
 
     void Start()
     {
-        MapManager = GameObject.FindGameObjectWithTag("Map").GetComponent<MapManager>();
+		TcpSession.setupSocket();
     }
 
     void Update()
     {
         //keep checking the server for messages, if a message is received from server, it gets logged in the Debug console (see function below)
-        if (TcpSession.socketReady == false)
-            return;
+		if (TcpSession.socketReady == false)
+			return;
 
         SocketResponse();
     }
 
-    void OnGUI()
-    {
-        //if connection has not been made, display button to connect
-        if (false == TcpSession.socketReady)
-        {
+	void OnGUI()
+	{
+		float width = 300.0f;
+		float height = 50.0f;
+		float x = Screen.width - width;
+		float y = Screen.height - height;
 
-            if (GUILayout.Button("Connect"))
-            {
-                //try to connect
-                Debug.Log("Attempting to connect..");
-                TcpSession.setupSocket();
-            }
-            return;
-        }
-
-        //once connection has been made, display editable text field with a button to send that string to the server (see function below)
-        else
-        {
-            if (false == IsLoginSuccess)
-            {
-                IdInput = GUILayout.TextField(IdInput);
-                PswInput = GUILayout.TextField(PswInput);
-                if (GUILayout.Button("Login", GUILayout.Height(30)))
-                {
-                    Login(IdInput, PswInput);
-                }
-            }
-
-            float width = 300.0f;
-            float height = 50.0f;
-            float x = Screen.width - width;
-            float y = Screen.height - height;
-
-            Rect rect = new Rect(x, y, width, height);
-            GUI.Box(rect, debugMsg);
-        }
-
-        if (IsMatchStart && !IsReady)
-        {
-            if (GUILayout.Button("Get Random Hero"))
-            {
-                RequestRandomHero();
-            }
-        }
-
-        if (HeroPositions.Count >= 4 && !IsReady)
-        {
-            if (GUILayout.Button("Ready"))
-            {
-                AllocHeros();
-                IsReady = true;
-                MapManager.Ready();
-                debugMsg = "Ready...";
-            }
-        }
-    }
+		Rect rect = new Rect(x, y, width, height);
+		GUI.Box(rect, debugMsg);
+	}
 
     //socket reading script
     void SocketResponse()
@@ -244,15 +196,17 @@ public class SocketScript : MonoBehaviour
 
     #region RecvServerEvent
     void OnLoginResponse(Packets.LoginResult result)
-    {
+	{
+		var title = GameObject.FindGameObjectWithTag("Scene").GetComponent<TitleScript>();
+
         switch (result)
         {
             case Packets.LoginResult.SUCCESS:
-                IsLoginSuccess = true;
+				title.loginSuccess(true);
                 debugMsg = "Login Complete!...";
                 break;
             case Packets.LoginResult.FAILED:
-                TcpSession.closeSocket();
+				title.loginSuccess(false);
                 debugMsg = "Login Failed!...";
                 break;
         }

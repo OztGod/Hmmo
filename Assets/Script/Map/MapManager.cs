@@ -20,6 +20,8 @@ public class MapManager : MonoBehaviour {
         myMap = transform.GetChild(0).GetComponent<MapScript>();
         otherMap = transform.GetChild(1).GetComponent<MapScript>();
         menuPanel = Menu.GetComponent<Menu>();
+
+		network.MapManager = this;
 	}
 
     public void Ready()
