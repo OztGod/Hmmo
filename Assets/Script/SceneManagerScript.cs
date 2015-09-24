@@ -1,6 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+public enum SceneType
+{
+    TITLE,
+    LOBBY,
+    PICK,
+    GAME
+}
+
 public class SceneManagerScript : MonoBehaviour {
 
 	// Use this for initialization
@@ -9,15 +17,32 @@ public class SceneManagerScript : MonoBehaviour {
         DontDestroyOnLoad(gameObject);
 	}
 	
-	// Update is called once per frame
-	void Update () 
+    public void SceneChange(SceneType type)
     {
-	
-	}
-
-    public void SceneChange()
-    {
-        Application.LoadLevel("GameScene");
+        UserScript user = GameObject.FindGameObjectWithTag("Network").GetComponent<UserScript>();
+        string sceneName = "";
+        switch (type)
+        {
+            case SceneType.GAME:
+                sceneName = "GameScene";
+                user.State = UserState.GAME;
+                break;
+            case SceneType.TITLE:
+                sceneName = "TitleScene";
+                user.State = UserState.START;
+                break;
+            case SceneType.LOBBY:
+                sceneName = "LobbyScene";
+                user.State = UserState.LOBBY;
+                break;
+            case SceneType.PICK:
+                sceneName = "PickScene";
+                user.State = UserState.PICK;
+                break;
+            default:
+                break;
+        }
+        Application.LoadLevel(sceneName);
     }
 
 }

@@ -8,22 +8,26 @@ public class MapManager : MonoBehaviour {
     public GameObject Menu;
 
 	public AudioClip defaultHit;
+    public PopUpScript PopUpMenu;
 
     MapScript myMap;
     MapScript otherMap;
     SocketScript network;
     Menu menuPanel;
-
+    UserScript user;
     bool isStart = false;
 
 	void Start () 
     {
+        user = GameObject.FindGameObjectWithTag("Network").GetComponent<UserScript>();
         network = GameObject.FindGameObjectWithTag("Network").GetComponent<SocketScript>();
         myMap = transform.GetChild(0).GetComponent<MapScript>();
         otherMap = transform.GetChild(1).GetComponent<MapScript>();
         menuPanel = Menu.GetComponent<Menu>();
 
 		network.MapManager = this;
+
+        InitCharacters();
 	}
 
     public void Ready()
@@ -34,9 +38,9 @@ public class MapManager : MonoBehaviour {
         Camera.main.GetComponent<CameraScript>().OnCameraMove();
     }
 
-    public void GetRandomCharacters(int[] characterTypes)
+    public void InitCharacters()
     {
-        myMap.GetRandomCharacters(characterTypes);
+        myMap.GetPickedCharacters(user.GetPickedHeros());
         myMap.MakeFormation();
     }
 
@@ -134,9 +138,16 @@ public class MapManager : MonoBehaviour {
         network.RequestSkillAction(hero.Index, targetPos, hero.CurrentSkillIdx);
     }
 
-    public void SetHeroSkills(int heroIdx, List<SkillModel> skillModel)
+    public void SetHeroSkills(int heroIdx, List<SkillModel> skillModel, bool isMine)
     {
-        myMap.GetCharacter(heroIdx).SetSkill(skillModel);
+        if (isMine)
+        {
+            myMap.GetCharacter(heroIdx).SetSkill(skillModel);
+        }
+        else
+        {
+            otherMap.GetCharacter(heroIdx).SetSkill(skillModel);
+        }
     }
 
     public void SetValidSkills(List<int> validSkills)
@@ -172,11 +183,10 @@ public class MapManager : MonoBehaviour {
     
     public void ResponseSkill(SkillEffectModel model)
     {
-		SkillType type = myMap.GetCharacter(model.SubjectHeroIdx).GetSkillType(model.CastingSkill);
-        MapScript map = model.IsMyTurn ? myMap : otherMap;
-        map.GetCharacter(model.SubjectHeroIdx).SkillAction(type);
+        MapScript subjectMap = model.IsMyTurn ? myMap : otherMap;
+        SkillType type = subjectMap.GetCharacter(model.SubjectHeroIdx).GetSkillType(model.CastingSkill);
+        subjectMap.GetCharacter(model.SubjectHeroIdx).SkillAction(type);
         
-
         for(int i= 0; i < model.AffectedPosNum; ++i)
         {
             MapScript affactedMap = model.IsMyField[i] ? myMap : otherMap;
@@ -208,6 +218,15 @@ public class MapManager : MonoBehaviour {
     {
         myMap.ClearTile();
         otherMap.ClearTile();
+    }
+
+    public void MatchEnd()
+    {
+        ClearAllTile();
+        myMap.ChangeState(MapSelectState.NO_SELECT);
+        otherMap.ChangeState(MapSelectState.NO_SELECT);
+        user.OwnHeroInfos.Clear();
+        PopUpMenu.PopUp(PopUpType.MATCH_END);
     }
 }
 

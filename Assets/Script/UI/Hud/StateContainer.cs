@@ -30,8 +30,6 @@ public class StateContainer : MonoBehaviour {
         {
             icon.UpdateState(duration);
         }
-
-
     }
 
     public void RemoveStatus(int id)

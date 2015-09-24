@@ -12,14 +12,15 @@ public class SocketScript : MonoBehaviour
     private TCPConnections TcpSession;
     private CircularBuffer RecvBuffer;
     public bool IsReady = false;
+    public bool IsLobbyReady = false;
     public int MaxHeroNum = 4;
     public List<MapIndex> HeroPositions = new List<MapIndex>();
     public MapManager MapManager = null;
-	public AudioClip readyBGM = null;
-	public AudioClip startBGM = null;
+    public AudioClip readyBGM = null;
+    public AudioClip startBGM = null;
 
     string debugMsg = "";
-
+    UserScript GameUser = null;
     bool IsMatchStart = false;
     int MyTurn = 0;
 
@@ -29,48 +30,38 @@ public class SocketScript : MonoBehaviour
         //add a copy of TCPConnection to this game object
         TcpSession = gameObject.AddComponent<TCPConnections>();
         RecvBuffer = TcpSession.recvBuffer;
-		TcpSession.setupSocket();
+        TcpSession.setupSocket();
         DontDestroyOnLoad(gameObject);
+    }
+
+    void Start()
+    {
+        GameUser = GetComponent<UserScript>();
     }
 
     void Update()
     {
         //keep checking the server for messages, if a message is received from server, it gets logged in the Debug console (see function below)
-		if (TcpSession.socketReady == false)
-			return;
+        if (TcpSession.socketReady == false)
+            return;
 
         SocketResponse();
     }
 
-	void OnGUI()
-	{
-		if (IsMatchStart && !IsReady)
-		{
-			if (GUILayout.Button("Get Random Hero"))
-			{
-				RequestRandomHero();
-			}
-		}
+    void OnGUI()
+    {
 
-		if (HeroPositions.Count >= 4 && !IsReady)
-		{
-			if (GUILayout.Button("Ready"))
-			{
-				AllocHeros();
-				IsReady = true;
-				MapManager.Ready();
-				debugMsg = "Ready...";
-			}
-		}
-
-		float width = 300.0f;
-		float height = 50.0f;
-		float x = Screen.width - width;
-		float y = Screen.height - height;
-
-		Rect rect = new Rect(x, y, width, height);
-		GUI.Box(rect, debugMsg);
-	}
+        if (HeroPositions.Count >= 4 && !IsReady)
+        {
+            if (GUILayout.Button("Ready"))
+            {
+                AllocHeros();
+                IsReady = true;
+                MapManager.Ready();
+                debugMsg = "Ready...";
+            }
+        }
+    }
 
     //socket reading script
     void SocketResponse()
@@ -112,34 +103,43 @@ public class SocketScript : MonoBehaviour
 
         byte[] data = Packets.ByteSerializer<Packets.LoginRequest>.GetBytes(packet);
         TcpSession.writeSocket(data);
-
+        GameUser.UserId = id;
         debugMsg = "Attempting to login..";
     }
 
-	public void Register(string id, string psw)
-	{
-		Packets.RegisterAccountRequest packet = new Packets.RegisterAccountRequest();
-		packet.type = (byte)Packets.Type.REGISTER_ACCOUNT_REQUEST;
-		packet.idLength = (sbyte)id.Length;
-		packet.passwordLength = (sbyte)psw.Length;
-		packet.id = id.ToCharArray();
-		packet.password = psw.ToCharArray();
-
-		byte[] data = Packets.ByteSerializer<Packets.RegisterAccountRequest>.GetBytes(packet);
-		TcpSession.writeSocket(data);
-
-		debugMsg = "Attempting to register..";
-	}
-
-    void RequestRandomHero()
+    public void Register(string id, string psw)
     {
-        Packets.RandomHeroRequest packet = new Packets.RandomHeroRequest();
-        packet.type = (byte)Packets.Type.RANDOM_HERO_REQUEST;
-        byte[] data = Packets.ByteSerializer<Packets.RandomHeroRequest>.GetBytes(packet);
+        Packets.RegisterAccountRequest packet = new Packets.RegisterAccountRequest();
+        packet.type = (byte)Packets.Type.REGISTER_ACCOUNT_REQUEST;
+        packet.idLength = (sbyte)id.Length;
+        packet.passwordLength = (sbyte)psw.Length;
+        packet.id = id.ToCharArray();
+        packet.password = psw.ToCharArray();
+
+        byte[] data = Packets.ByteSerializer<Packets.RegisterAccountRequest>.GetBytes(packet);
         TcpSession.writeSocket(data);
 
-        debugMsg = "Request Random Hero...";
-        HeroPositions.Clear() ;
+        debugMsg = "Attempting to register..";
+    }
+
+    public void MatchRequest()
+    {
+        Packets.RequestMatch packet = new Packets.RequestMatch();
+        packet.type = (byte)Packets.Type.REQUEST_MATCH;
+        byte[] data = Packets.ByteSerializer<Packets.RequestMatch>.GetBytes(packet);
+        TcpSession.writeSocket(data);
+
+        debugMsg = "Attempting to RequestMatch..";
+    }
+
+    public void MatchCancel()
+    {
+        Packets.CancelMatch packet = new Packets.CancelMatch();
+        packet.type = (byte)Packets.Type.CANCEL_MATCH;
+        byte[] data = Packets.ByteSerializer<Packets.CancelMatch>.GetBytes(packet);
+        TcpSession.writeSocket(data);
+
+        debugMsg = "Attempting to CancelMatch..";
     }
 
     public void AllocHeros()
@@ -160,6 +160,16 @@ public class SocketScript : MonoBehaviour
         TcpSession.writeSocket(data);
 
         debugMsg = "Alloc Hero...";
+    }
+
+    public void RequestSurrender()
+    {
+        Packets.Surrender packet = new Packets.Surrender();
+        packet.type = (byte)Packets.Type.SURRENDER;
+        byte[] data = Packets.ByteSerializer<Packets.Surrender>.GetBytes(packet);
+        TcpSession.writeSocket(data);
+
+        debugMsg = "Surrender...";
     }
 
     public void CharacterSelect(int heroIndex)
@@ -223,53 +233,75 @@ public class SocketScript : MonoBehaviour
 
         debugMsg = "Request SkillAction...";
     }
+
+    public void SendPick(int idx1, int idx2)
+    {
+        Packets.Pick packet = new Packets.Pick();
+        packet.type = (byte)Packets.Type.PICK;
+        packet.heroIdx[0] = (sbyte)idx1;
+        packet.heroIdx[1] = (sbyte)idx2;
+
+        byte[] data = Packets.ByteSerializer<Packets.Pick>.GetBytes(packet);
+        TcpSession.writeSocket(data);
+
+        debugMsg = "Send Pick....";
+    }
     #endregion
 
     #region RecvServerEvent
     void OnLoginResponse(Packets.LoginResult result)
-	{
-		var title = GameObject.FindGameObjectWithTag("Scene").GetComponent<TitleScript>();
+    {
+        var loginMenu = GameObject.FindGameObjectWithTag("UI").GetComponent<TitleUI>().LoginMenu;
 
         switch (result)
         {
             case Packets.LoginResult.SUCCESS:
-				title.loginSuccess(true);
+                loginMenu.OnLogin(true);
+                GameUser.State = UserState.LOGIN;
                 debugMsg = "Login Complete!...";
                 break;
             case Packets.LoginResult.FAILED:
-				title.loginSuccess(false);
+                loginMenu.OnLogin(false);
                 debugMsg = "Login Failed!...";
                 break;
         }
     }
 
-	void OnRegisterAccount(Packets.RegisterAccountResponse result)
-	{
-		var title = GameObject.FindGameObjectWithTag("Scene").GetComponent<TitleScript>();
+    void OnRegisterAccount(Packets.RegisterAccountResponse result)
+    {
+        var loginMenu = GameObject.FindGameObjectWithTag("UI").GetComponent<TitleUI>().LoginMenu;
 
-		switch (result.isSuccess)
-		{
-			case 1:
-				title.registerSuccess(true);
-				debugMsg = "Register Complete!...";
-				break;
-			case 0:
-				title.registerSuccess(false);
-				debugMsg = "Register Failed!...";
-				break;
-		}
-	}
+        switch (result.isSuccess)
+        {
+            case 1:
+                loginMenu.OnRegister(true);
+                debugMsg = "Register Complete!...";
+                break;
+            case 0:
+                loginMenu.OnRegister(false);
+                debugMsg = "Register Failed!...";
+                break;
+        }
+    }
 
     void OnMatchStart(Packets.MatchStart result)
     {
         IsMatchStart = true;
         MyTurn = result.turn;
-		AudioManager.instance.PlayBGM(readyBGM);
+        AudioManager.instance.PlayBGM(readyBGM);
+        var sceneMng = GameObject.FindGameObjectWithTag("Scene").GetComponent<SceneManagerScript>();
+        sceneMng.SceneChange(SceneType.PICK);
     }
 
+    void OnMatchEnd(Packets.MatchEnd packet)
+    {
+        bool isMyWin = MyTurn == (int)packet.winner;
+        GameUser.MyMatchResult = (isMyWin) ? MatchResult.WIN : MatchResult.LOSE;
+        MapManager.MatchEnd();
+    }
     void OnGameData(Packets.GameData packet)
-	{
-		AudioManager.instance.PlayBGM(startBGM);
+    {
+        AudioManager.instance.PlayBGM(startBGM);
 
         HeroModel[] heroDatas = new HeroModel[4];
         for (int i = 0; i < 4; ++i)
@@ -297,7 +329,8 @@ public class SocketScript : MonoBehaviour
             newSkill.type = (SkillType)packet.skillType[i];
             skills.Add(newSkill);
         }
-        MapManager.SetHeroSkills(packet.heroIdx, skills);
+        bool isMyData = (packet.turn == MyTurn);
+        MapManager.SetHeroSkills(packet.heroIdx, skills, isMyData);
         debugMsg = "Get SkillData!";
     }
 
@@ -316,18 +349,6 @@ public class SocketScript : MonoBehaviour
         bool isMine = MyTurn == packet.turn;
 
         MapManager.UpdateHero(model, isMine);
-    }
-
-    void OnRandomHeroResponse(byte[] heroRes)
-    {
-        int[] classArray = new int[heroRes.Length];
-        for (int i = 0; i < heroRes.Length; ++i)
-        {
-            classArray[i] = (int)heroRes[i];
-        }
-
-        MapManager.GetRandomCharacters(classArray);
-        debugMsg = "Character Setting...";
     }
 
     void OnUpdateTurn(Packets.UpdateTurn packet)
@@ -395,7 +416,7 @@ public class SocketScript : MonoBehaviour
     void OnHeroState(Packets.HeroState packet)
     {
         StateModel model = new StateModel();
-        
+
         model.type = (StateType)packet.stateType;
         model.heroIdx = (int)packet.targetIdx;
         model.id = (int)packet.stateId;
@@ -420,11 +441,71 @@ public class SocketScript : MonoBehaviour
         MapManager.UpdateStatus(model, isMine);
     }
 
+    void OnEnterLobby(Packets.EnterLobby packet)
+    {
+        GameUser.WinCount = (int)packet.win;
+        GameUser.LoseCount = (int)packet.lose;
+        GameUser.HeroNum = (int)packet.heroNum;
+    }
+
+    void OnHeroData(Packets.HeroData packet)
+    {
+        OwnHeroModel model = new OwnHeroModel();
+        model.heroType = (HeroClass)packet.heroType;
+        model.level = (int)packet.level;
+        model.maxHp = (int)packet.hp;
+        model.maxAct = (int)packet.act;
+
+        for (int i = 0; i < (int)packet.skillNum; ++i)
+        {
+            SimpleSkillModel skill = new SimpleSkillModel();
+            skill.type = (SkillType)packet.skillType[i];
+            skill.level = (int)packet.skillLevel[i];
+            model.skills.Add(skill);
+        }
+        
+        GameUser.OwnHeroInfos.Add(model);
+        if(GameUser.OwnHeroInfos.Count == GameUser.HeroNum)
+        {
+            GameUser.EnterLobby();
+        }
+    }
+
+    void OnPickData(Packets.PickData packet)
+    {
+        int pickCount = (int)packet.heroNum;
+        var picker = GameObject.FindGameObjectWithTag("Picker").GetComponent<TotalWindow>();
+        bool isMine = (MyTurn == (int)packet.turn);
+        for(int i= 0 ;i < pickCount; ++i)
+        {
+            HeroClass pickClass = (HeroClass)packet.heroType[i];
+            picker.OnPickData(isMine, pickClass);
+        }
+    }
+
+    void OnPickEnd(Packets.PickEnd packet)
+    {
+        for(int i= 0 ;i < 4; ++i)
+        {
+            GameUser.PickedHeroIdxes.Add(packet.heroIdx[i]);
+        }
+        var SceneMng = GameObject.FindGameObjectWithTag("Scene").GetComponent<SceneManagerScript>();
+        SceneMng.SceneChange(SceneType.GAME);
+    }
+
+    void OnPickTurn(Packets.PickTurn packet)
+    {
+        GameUser.IsMyPick = true;
+        GameUser.PickNum = (int)packet.pickNum;
+        debugMsg = "PickTurn...";
+    }
+
     void OnReject()
     {
         MapManager.RejectPacket();
         debugMsg = "Reject...";
     }
+
     #endregion
 
     #region PacketHandler
@@ -451,23 +532,6 @@ public class SocketScript : MonoBehaviour
                 }
                 break;
 
-            case Packets.Type.RANDOM_HERO_RESPONSE:
-                {
-                    int packetSize = Marshal.SizeOf(typeof(Packets.RandomHeroResponse));
-                    if (RecvBuffer.GetStoredSize() < packetSize)
-                    {
-                        return false;
-                    }
-
-                    debugMsg = "Random Hero Response...";
-                    Packets.RandomHeroResponse packet = new Packets.RandomHeroResponse();
-                    packet.heroClass = new byte[4];
-                    byte[] buffer = new byte[packetSize];
-                    RecvBuffer.Read(ref buffer, packetSize);
-                    packet = Packets.ByteSerializer<Packets.RandomHeroResponse>.Deserialize(buffer);
-                    OnRandomHeroResponse(packet.heroClass);
-                }
-                break;
 
             case Packets.Type.MATCH_START:
                 {
@@ -501,6 +565,7 @@ public class SocketScript : MonoBehaviour
                     RecvBuffer.Read(ref buffer, packetSize);
 
                     Packets.ByteSerializer<Packets.MatchEnd>.ByteToObj(ref packet, buffer);
+                    OnMatchEnd(packet);
                 }
                 break;
 
@@ -770,24 +835,131 @@ public class SocketScript : MonoBehaviour
                     OnRemoveState(packet);
                 }
                 break;
-			case Packets.Type.REGISTER_ACCOUNT_RESPONSE:
-				{
-					int packetSize = Marshal.SizeOf(typeof(Packets.RegisterAccountResponse));
-					if (RecvBuffer.GetStoredSize() < packetSize)
-					{
-						return false;
-					}
+            case Packets.Type.REGISTER_ACCOUNT_RESPONSE:
+                {
+                    int packetSize = Marshal.SizeOf(typeof(Packets.RegisterAccountResponse));
+                    if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
+                        return false;
+                    }
 
-					debugMsg = "RemoveHeroState...";
-					Packets.RegisterAccountResponse packet = new Packets.RegisterAccountResponse();
-					byte[] buffer = new byte[packetSize];
-					RecvBuffer.Read(ref buffer, packetSize);
+                    debugMsg = "RemoveHeroState...";
+                    Packets.RegisterAccountResponse packet = new Packets.RegisterAccountResponse();
+                    byte[] buffer = new byte[packetSize];
+                    RecvBuffer.Read(ref buffer, packetSize);
 
-					Packets.ByteSerializer<Packets.RegisterAccountResponse>.ByteToObj(ref packet, buffer);
-					OnRegisterAccount(packet);
-				}
-				break;
+                    Packets.ByteSerializer<Packets.RegisterAccountResponse>.ByteToObj(ref packet, buffer);
+                    OnRegisterAccount(packet);
+                }
+                break;
 
+            case Packets.Type.ENTER_LOBBY:
+                {
+                    int packetSize = Marshal.SizeOf(typeof(Packets.EnterLobby));
+                    if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
+                        return false;
+                    }
+
+                    debugMsg = "EnterLobby...";
+                    Packets.EnterLobby packet = new Packets.EnterLobby();
+                    byte[] buffer = new byte[packetSize];
+                    RecvBuffer.Read(ref buffer, packetSize);
+
+                    Packets.ByteSerializer<Packets.EnterLobby>.ByteToObj(ref packet, buffer);
+                    OnEnterLobby(packet);
+                }
+                break;
+
+            case Packets.Type.HERO_DATA:
+                {
+                    int packetSize = Marshal.SizeOf(typeof(Packets.HeroData));
+                    if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
+                        return false;
+                    }
+
+                    debugMsg = "HeroData...";
+                    Packets.HeroData packet = new Packets.HeroData();
+                    byte[] buffer = new byte[packetSize];
+                    RecvBuffer.Read(ref buffer, packetSize);
+
+                    Packets.ByteSerializer<Packets.HeroData>.ByteToObj(ref packet, buffer);
+                    OnHeroData(packet);
+                }
+                break;
+            case Packets.Type.PICK:
+                {
+                    int packetSize = Marshal.SizeOf(typeof(Packets.Pick));
+                    if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
+                        return false;
+                    }
+
+                    debugMsg = "Pick...";
+                    Packets.Pick packet = new Packets.Pick();
+                    byte[] buffer = new byte[packetSize];
+                    RecvBuffer.Read(ref buffer, packetSize);
+
+                    Packets.ByteSerializer<Packets.Pick>.ByteToObj(ref packet, buffer);
+
+                }
+                break;
+
+            case Packets.Type.PICK_DATA:
+                {
+                    int packetSize = Marshal.SizeOf(typeof(Packets.PickData));
+                    if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
+                        return false;
+                    }
+
+                    debugMsg = "PickData...";
+                    Packets.PickData packet = new Packets.PickData();
+                    byte[] buffer = new byte[packetSize];
+                    RecvBuffer.Read(ref buffer, packetSize);
+
+                    Packets.ByteSerializer<Packets.PickData>.ByteToObj(ref packet, buffer);
+                    OnPickData(packet);
+                }
+                break;
+            case Packets.Type.PICK_END:
+                {
+                    int packetSize = Marshal.SizeOf(typeof(Packets.PickEnd));
+                    if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
+                        return false;
+                    }
+
+                    debugMsg = "PickEnd...";
+                    Packets.PickEnd packet = new Packets.PickEnd();
+                    byte[] buffer = new byte[packetSize];
+                    RecvBuffer.Read(ref buffer, packetSize);
+
+                    Packets.ByteSerializer<Packets.PickEnd>.ByteToObj(ref packet, buffer);
+                    OnPickEnd(packet);
+                }
+                break;
+
+            case Packets.Type.PICK_TURN:
+                {
+                    int packetSize = Marshal.SizeOf(typeof(Packets.PickTurn));
+                    if (RecvBuffer.GetStoredSize() < packetSize)
+                    {
+                        return false;
+                    }
+
+                    debugMsg = "PickTurn...";
+                    Packets.PickTurn packet = new Packets.PickTurn();
+                    byte[] buffer = new byte[packetSize];
+                    RecvBuffer.Read(ref buffer, packetSize);
+
+                    Packets.ByteSerializer<Packets.PickTurn>.ByteToObj(ref packet, buffer);
+                    OnPickTurn(packet);
+                }
+                break;
+
+                
             default:
                 break;
         }
@@ -797,7 +969,6 @@ public class SocketScript : MonoBehaviour
     #endregion
 }
 
-
 namespace Packets
 {
     #region Packets
@@ -806,30 +977,37 @@ namespace Packets
         LOGIN_REQUEST = 0,
         LOGIN_RESPONSE = 1,
         ALLOC_HERO = 2,
-        RANDOM_HERO_REQUEST = 3,
-        RANDOM_HERO_RESPONSE = 4,
-        MATCH_START = 5,
-        MATCH_END = 6,
-        GAME_DATA = 7,
-        SKILL_DATA = 8,
-        CHANGE_HERO_STATE = 9,
-        SELECT_HERO = 10,
-        VALID_SKILLS = 11,
-        SKILL_RANGE_REQUEST = 12,
-        SKILL_RANGE_RESPONSE = 13,
-        SKILL_SHOT = 14,
-        MOVE_HERO = 15,
-        ACT_HERO = 16,
-        DEAD_HERO = 17,
-        TURN_END = 18,
-        UPDATE_TURN = 19,
-        REJECT = 20,
-        HERO_STATE = 21,
-        HERO_REMOVE_STATE = 22,
-        EFFECT_RESPONSE = 23,
-        REGISTER_ACCOUNT_REQUEST = 24,
-        REGISTER_ACCOUNT_RESPONSE = 25,
-        TYPE_NUM = 26,
+        MATCH_START = 3,
+        MATCH_END = 4,
+        GAME_DATA = 5,
+        SKILL_DATA = 6,
+        CHANGE_HERO_STATE = 7,
+        SELECT_HERO = 8,
+        VALID_SKILLS = 9,
+        SKILL_RANGE_REQUEST = 10,
+        SKILL_RANGE_RESPONSE = 11,
+        SKILL_SHOT = 12,
+        MOVE_HERO = 13,
+        ACT_HERO = 14,
+        DEAD_HERO = 15,
+        TURN_END = 16,
+        UPDATE_TURN = 17,
+        REJECT = 18,
+        HERO_STATE = 19,
+        HERO_REMOVE_STATE = 20,
+        EFFECT_RESPONSE = 21,
+        REGISTER_ACCOUNT_REQUEST = 22,
+        REGISTER_ACCOUNT_RESPONSE = 23,
+        REQUEST_MATCH = 24,
+        CANCEL_MATCH = 25,
+        ENTER_LOBBY = 26,
+        HERO_DATA = 27,
+        PICK_TURN = 28,
+        PICK = 29,
+        PICK_DATA = 30,
+        PICK_END = 31,
+        SURRENDER = 32,
+        TYPE_NUM = 33,
     }
     public enum LoginResult
     {
@@ -873,16 +1051,6 @@ namespace Packets
         public sbyte[] y = new sbyte[4];
     }
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public class RandomHeroRequest : Header
-    {
-    }
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public class RandomHeroResponse : Header
-    {
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public byte[] heroClass = new byte[4];
-    }
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class MatchStart : Header
     {
         [MarshalAs(UnmanagedType.U1)]
@@ -909,6 +1077,8 @@ namespace Packets
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class SkillData : Header
     {
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte turn;
         [MarshalAs(UnmanagedType.U1)]
         public sbyte heroIdx;
         [MarshalAs(UnmanagedType.U1)]
@@ -1120,6 +1290,75 @@ namespace Packets
         [MarshalAs(UnmanagedType.U1)]
         public sbyte isSuccess;
     }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class RequestMatch : Header
+    {
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class CancelMatch : Header
+    {
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class EnterLobby : Header
+    {
+        [MarshalAs(UnmanagedType.U4)]
+        public Int32 win;
+        [MarshalAs(UnmanagedType.U4)]
+        public Int32 lose;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte heroNum;
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class HeroData : Header
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public byte heroType;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte level;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte hp;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte act;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte skillNum;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public sbyte[] skillType = new sbyte[4];
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public sbyte[] skillLevel = new sbyte[4];
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class PickTurn : Header
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte pickNum;
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class Pick : Header
+    {
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
+        public sbyte[] heroIdx = new sbyte[2];
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class PickData : Header
+    {
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte turn;
+        [MarshalAs(UnmanagedType.U1)]
+        public sbyte heroNum;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
+        public byte[] heroType = new byte[2];
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class PickEnd : Header
+    {
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public sbyte[] heroIdx = new sbyte[4];
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class Surrender : Header
+    {
+    }
+
     #endregion
 
     #region Serializer & Parser

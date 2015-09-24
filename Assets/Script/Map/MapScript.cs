@@ -35,7 +35,8 @@ public class MapScript : MonoBehaviour {
     int totalSettingNum = 0;
 
 	// Use this for initialization
-	void Start () {
+	void Awake () 
+    {
         mapManager = GameObject.FindGameObjectWithTag("Map").GetComponent<MapManager>();
 	}
 	
@@ -332,10 +333,10 @@ public class MapScript : MonoBehaviour {
         ChangeState(MapSelectState.CHARACTER_SELECT);
     }
 
-    public void GetRandomCharacters(int[] characterTypes)
+    public void GetPickedCharacters(List<HeroClass> heroClasses)
     {
         SetIsMine(true);
-        numOfCharacter = characterTypes.Length;
+        numOfCharacter = heroClasses.Count;
 		totalSettingNum = 0;
 
         for (int index = 0; index < numOfCharacter; ++index)
@@ -346,7 +347,7 @@ public class MapScript : MonoBehaviour {
                 Object.Destroy(characters[index]);
 			}
 
-            HeroClass heroType = (HeroClass)(characterTypes[index] % (int)HeroClass.NUM);
+            HeroClass heroType = heroClasses[index];
             
             switch (heroType)
             {
